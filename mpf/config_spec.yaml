@@ -1566,7 +1566,7 @@ settings:
     label: single|str|
     sort: single|int|
     values: dict|str:str|
-    key_type: single|enum(str,float,int)|str
+    key_type: single|enum(str,float,int,bool)|str
     default: single|str|
     machine_var: single|str|None
     settingType: single|str|standard
