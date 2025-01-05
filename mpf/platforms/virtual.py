@@ -60,13 +60,18 @@ class VirtualHardwarePlatform(AccelerometerPlatform, I2cPlatform, ServoPlatform,
 
     async def initialize(self) -> None:
         """Initialize platform."""
-        self.machine.events.add_handler("virtual_platform_remove_ball_from_device", self.remove_ball_from_device)
-        self.machine.events.add_handler("virtual_platform_add_ball_to_device", self.add_ball_to_device)
+        self.machine.events.add_handler("virtual_platform_set_switch",
+                                        self.virtual_set_switch)
+        self.machine.events.add_handler("virtual_platform_remove_ball_from_device",
+                                        self.virtual_remove_ball_from_device)
+        self.machine.events.add_handler("virtual_platform_add_ball_to_device",
+                                        self.virtual_add_ball_to_device)
 
     def stop(self):
         """Stop platform."""
-        self.machine.events.remove_handler(self.remove_ball_from_device)
-        self.machine.events.remove_handler(self.add_ball_to_device)
+        self.machine.events.remove_handler(self.virtual_set_switch)
+        self.machine.events.remove_handler(self.virtual_remove_ball_from_device)
+        self.machine.events.remove_handler(self.virtual_add_ball_to_device)
 
     async def configure_servo(self, number: str, config: dict):
         """Configure a servo device in platform."""
@@ -143,7 +148,8 @@ class VirtualHardwarePlatform(AccelerometerPlatform, I2cPlatform, ServoPlatform,
         return platforms
 
     def _set_ball_device_switch_state(self, ball_device, ball_position, switch_state):
-        assert(self.machine.ball_devices.get(ball_device), f"Unknown ball device '{ball_device}")
+        if not self.machine.ball_devices.get(ball_device):
+            raise AssertionError(f"Unknown ball device '{ball_device}'")
         bd = self.machine.ball_devices[ball_device]
         switches = [s for s in Util.string_to_list(bd.config['ball_switches']) if s != bd.config.get('jam_switch')]
         # If an explicit switch is designated, deactivate that one.
@@ -162,15 +168,26 @@ class VirtualHardwarePlatform(AccelerometerPlatform, I2cPlatform, ServoPlatform,
             else:
                 switch = switches[0]
         self.machine.switch_controller.process_switch(switch, switch_state)
-        return switch
 
-    def remove_ball_from_device(self, ball_device, ball_position=-1, **kwargs):
+    def virtual_set_switch(self, switch, state=-1, **kwargs):
+        """Simulate a switch state change, either to an explicit state or toggle."""
+        del kwargs
+        s = self.machine.switches[switch]
+        if state == -1:
+            state = s.state ^ 1
+        self.machine.switch_controller.process_switch_obj(s, state, True)
+
+    def virtual_remove_ball_from_device(self, ball_device, ball_position=-1, **kwargs):
         """Remove a ball from a device by deactivating a switch."""
         del kwargs
         self._set_ball_device_switch_state(ball_device, ball_position, 0)
 
-    def add_ball_to_device(self, ball_device, ball_position=-1, **kwargs):
-        """Add a ball from a device by activating a switch."""
+    def virtual_add_ball_to_device(self, ball_device, ball_position=-1, **kwargs):
+        """Add a ball from a device by activating a switch.
+
+        This is a simpler version of SmartVirtualPlatform's add_ball_to_device,
+        and should probably not be used on Smart Virtual platform.
+        """
         del kwargs
         self._set_ball_device_switch_state(ball_device, ball_position, 1)
 
@@ -548,7 +565,7 @@ class VirtualStepper(StepperPlatformInterface):
         """Wait until move completed."""
         await asyncio.sleep(0.1)
 
-    def move_rel_pos(self, position):
+    def move_rel_pos(self, position, speed=None):
         """Move axis to a relative position."""
         self._current_position += position
 
