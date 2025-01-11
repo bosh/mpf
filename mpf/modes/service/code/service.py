@@ -74,10 +74,10 @@ sort_devices_by_number: single|bool|True
                 ["sw_service_esc_active"]
             ): "ESC",
             self.machine.events.wait_for_any_event(
-                ["s_flipper_left_inactive"]
+                ["sw_left_flipper_inactive"]
             ): "PAGE_LEFT",
             self.machine.events.wait_for_any_event(
-                ["s_flipper_right_inactive"]
+                ["sw_right_flipper_inactive"]
             ): "PAGE_RIGHT",
             self.machine.events.wait_for_any_event(
                 # Use the INACTIVE event to prevent attract from starting a game
