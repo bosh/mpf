@@ -10,7 +10,7 @@ class Carousel(Mode):
 
     __slots__ = ["_all_items", "_items", "_select_item_events", "_next_item_events",
                  "_previous_item_events", "_highlighted_item_index", "_done",
-                 "_block_events", "_release_events", "_is_blocking"]
+                 "_block_events", "_release_events", "_is_blocking", "_wrap_items"]
 
     def __init__(self, *args, **kwargs):
         """Initialize carousel mode."""
@@ -23,6 +23,7 @@ class Carousel(Mode):
         self._block_events = None
         self._release_events = None
         self._is_blocking = None
+        self._wrap_items = None
         self._done = None
         super().__init__(*args, **kwargs)
 
@@ -41,6 +42,7 @@ class Carousel(Mode):
         self._highlighted_item_index = 0
         self._block_events = Util.string_to_event_list(mode_settings.get("block_events", ""))
         self._release_events = Util.string_to_event_list(mode_settings.get("release_events", ""))
+        self._wrap_items = mode_settings.get("wrap_items", True)
 
         if not self._all_items:
             raise AssertionError("Specify at least one item to select from")
@@ -113,6 +115,9 @@ class Carousel(Mode):
             return
         self._highlighted_item_index += 1
         if self._highlighted_item_index >= len(self._get_available_items()):
+            if not self._wrap_items:
+                self._highlighted_item_index -= 1
+                return
             self._highlighted_item_index = 0
         self._update_highlighted_item("forwards")
 
@@ -122,6 +127,9 @@ class Carousel(Mode):
             return
         self._highlighted_item_index -= 1
         if self._highlighted_item_index < 0:
+            if not self._wrap_items:
+                self._highlighted_item_index = 0
+                return
             self._highlighted_item_index = len(self._get_available_items()) - 1
 
         self._update_highlighted_item("backwards")
