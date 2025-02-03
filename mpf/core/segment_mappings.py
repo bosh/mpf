@@ -14,6 +14,7 @@ MYPY = False
 if MYPY:   # pragma: no cover
     from mpf.core.rgb_color import RGBColor     # pylint: disable-msg=cyclic-import,unused-import; # noqa
 
+# pylint: disable-msg=line-too-long
 
 class TextToSegmentMapper:
 
