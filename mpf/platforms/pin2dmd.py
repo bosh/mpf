@@ -110,8 +110,10 @@ class Pin2DmdDevice(DmdPlatformInterface):
     def _send_frame(self, buffer):
         if self.resolution == "128x32":
             elements = 2048
-        else:
+        elif self.resolution == "192x64":
             elements = 6144
+        else:
+            elements = 8192
 
         output_buffer = [0] * (elements * 6 + 4)
 
@@ -163,6 +165,21 @@ class Pin2DmdDevice(DmdPlatformInterface):
                 pixel_gl >>= 1
                 pixel_bl >>= 1
                 target_idx += elements
+
+        if self.resolution == "256x64":
+            dest_idx = 4
+            tmp_idx = 4
+            temp_buffer = output_buffer.copy()
+
+            for _ in range(0, elements * 3):
+                temp_buffer[dest_idx] = output_buffer[tmp_idx + 128]
+                temp_buffer[dest_idx + 1] = output_buffer[tmp_idx] << 1
+                dest_idx += 2
+                tmp_idx += 1
+                if (dest_idx - 4) % 256 == 0:
+                    tmp_idx += 128
+
+            output_buffer = temp_buffer
 
         if self.debug:
             self.log.debug("Writing 0x01, %s, 1000", "".join(" 0x%02x" % b for b in output_buffer))
