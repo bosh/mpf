@@ -1249,7 +1249,7 @@ pin2dmd:
     debug: single|bool|false
     console_log: single|enum(none,basic,full)|none
     file_log: single|enum(none,basic,full)|basic
-    resolution: single|enum(128x32,192x64)|128x32
+    resolution: single|enum(128x32,192x64,256x64)|128x32
     panel: single|enum(rgb,rbg)|rgb
 pkone:
     __valid_in__: machine
