@@ -55,6 +55,54 @@ class TestCarouselMode(MpfTestCase):
         # item2 highlighted should be called when a blocked mode restarts
         self.assertEventCalledWith("item_highlighted", carousel="blocking_carousel", item="item2", direction="forwards")
 
+    def testNoWrapCarousel(self):
+
+        self.mock_event("item_highlighted")
+        self._start_game()
+        self.post_event("start_mode_nowrap_carousel")
+        self.advance_time_and_run()
+        #self.assertEqual(1, self._events["nowrap_carousel_item1_highlighted"])
+        self.assertEventCalledWith("item_highlighted", carousel="nowrap_carousel", item="item1", direction=None)
+
+        # Advance forward one and back
+        self.post_event("next")
+        self.advance_time_and_run()
+        #self.assertEqual(1, self._events["nowrap_carousel_item1_highlighted"])
+        #self.assertEqual(1, self._events["nowrap_carousel_item2_highlighted"])
+        self.assertEventCalledWith("item_highlighted", carousel="nowrap_carousel", item="item2", direction="forwards")
+
+        self.post_event("previous")
+        self.advance_time_and_run()
+
+        self.assertEventCalledWith("item_highlighted", carousel="nowrap_carousel", item="item1", direction="backwards")
+        # Try and go back but fail
+        self.mock_event("item_highlighted")
+        self.post_event("previous")
+        self.advance_time_and_run()
+        self.assertEventNotCalled("item_highlighted")
+        self.assertEqual(self.machine.modes["nowrap_carousel"]._highlighted_item_index, 0)
+        self.post_event("previous")
+        self.advance_time_and_run()
+        self.assertEventNotCalled("item_highlighted")
+        self.assertEqual(self.machine.modes["nowrap_carousel"]._highlighted_item_index, 0)
+
+        # Go forward to the last item
+        self.post_event("next")
+        self.advance_time_and_run()
+        self.assertEventCalledWith("item_highlighted", carousel="nowrap_carousel", item="item2", direction="forwards")
+        self.post_event("next")
+        self.advance_time_and_run()
+        self.assertEventCalledWith("item_highlighted", carousel="nowrap_carousel", item="item3", direction="forwards")
+        # Try and go forward but fail
+        self.mock_event("item_highlighted")
+        self.post_event("next")
+        self.advance_time_and_run()
+        self.assertEventNotCalled("item_highlighted")
+        self.assertEqual(self.machine.modes["nowrap_carousel"]._highlighted_item_index, 2)
+        self.post_event("next")
+        self.advance_time_and_run()
+        self.assertEventNotCalled("item_highlighted")
+        self.assertEqual(self.machine.modes["nowrap_carousel"]._highlighted_item_index, 2)
 
     def testConditionalCarousel(self):
         self.mock_event("item_highlighted")

@@ -1,7 +1,12 @@
+# pylint: disable-msg=too-many-lines # noqa
 """Generic mappings for segment displays.
 
-Those mappings are based on David Madison's awesome mappings: https://github.com/dmadison/LED-Segment-ASCII.
-You can use convert_segments.py (based on https://github.com/dmadison/LED-Segment-ASCII/issues/2) to recreate them.
+Those mappings are based on David Madison's awesome mappings:
+https://github.com/dmadison/LED-Segment-ASCII.
+
+You can use convert_segments.py (based on
+https://github.com/dmadison/LED-Segment-ASCII/issues/2) to recreate
+them.
 
 BCD were created by us.
 """
@@ -459,11 +464,12 @@ class FourteenSegments(Segment):
     See segment order here: https://github.com/dmadison/LED-Segment-ASCII/blob/master/README.md.
     """
 
-    __slots__ = ["l", "m", "n", "k", "j", "h", "g2", "g1", "f", "e", "d", "c", "b", "a"]
+    __slots__ = ["l", "m", "n", "k", "j", "h", "g2", "g1", "f", "e",
+                "d", "c", "b", "a"]  # noqa: E741
 
     # pylint: disable-msg=too-many-arguments
     # pylint: disable-msg=too-many-locals
-    def __init__(self, dp, l, m, n, k, j, h, g2, g1, f, e, d, c, b, a, char):   # noqa E741
+    def __init__(self, dp, l, m, n, k, j, h, g2, g1, f, e, d, c, b, a, char):   # noqa: E741
         """Create segment entry."""
         super().__init__(dp, char)
         self.a = a
@@ -506,103 +512,198 @@ class FourteenSegments(Segment):
 
 
 FOURTEEN_SEGMENTS = {
-    None: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=0, g1=0, f=0, e=0, d=0, c=0, b=0, a=0,    # noqa: E741
-                           char="?"),
-    32: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=0, g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char=" "),   # noqa: E741
-    33: FourteenSegments(dp=1, l=0, m=0, n=0, k=0, j=0, h=0, g2=0, g1=0, f=0, e=0, d=0, c=1, b=1, a=0, char="!"),   # noqa: E741
-    34: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=1, h=0, g2=0, g1=0, f=0, e=0, d=0, c=0, b=1, a=0, char="\""),  # noqa: E741
-    35: FourteenSegments(dp=0, l=0, m=1, n=0, k=0, j=1, h=0, g2=1, g1=1, f=0, e=0, d=1, c=1, b=1, a=0, char="#"),   # noqa: E741
-    36: FourteenSegments(dp=0, l=0, m=1, n=0, k=0, j=1, h=0, g2=1, g1=1, f=1, e=0, d=1, c=1, b=0, a=1, char="$"),   # noqa: E741
-    37: FourteenSegments(dp=0, l=1, m=0, n=1, k=1, j=0, h=1, g2=1, g1=1, f=1, e=0, d=0, c=1, b=0, a=0, char="%"),   # noqa: E741
-    38: FourteenSegments(dp=0, l=1, m=0, n=0, k=0, j=1, h=1, g2=0, g1=1, f=0, e=1, d=1, c=0, b=0, a=1, char="&"),   # noqa: E741
-    39: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=1, h=0, g2=0, g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char="'"),   # noqa: E741
-    40: FourteenSegments(dp=0, l=1, m=0, n=0, k=1, j=0, h=0, g2=0, g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char="("),   # noqa: E741
-    41: FourteenSegments(dp=0, l=0, m=0, n=1, k=0, j=0, h=1, g2=0, g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char=")"),   # noqa: E741
-    42: FourteenSegments(dp=0, l=1, m=1, n=1, k=1, j=1, h=1, g2=1, g1=1, f=0, e=0, d=0, c=0, b=0, a=0, char="*"),   # noqa: E741
-    43: FourteenSegments(dp=0, l=0, m=1, n=0, k=0, j=1, h=0, g2=1, g1=1, f=0, e=0, d=0, c=0, b=0, a=0, char="+"),   # noqa: E741
-    44: FourteenSegments(dp=0, l=0, m=0, n=1, k=0, j=0, h=0, g2=0, g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char=","),   # noqa: E741
-    45: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1, g1=1, f=0, e=0, d=0, c=0, b=0, a=0, char="-"),   # noqa: E741
-    46: FourteenSegments(dp=1, l=0, m=0, n=0, k=0, j=0, h=0, g2=0, g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char="."),   # noqa: E741
-    47: FourteenSegments(dp=0, l=0, m=0, n=1, k=1, j=0, h=0, g2=0, g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char="/"),   # noqa: E741
-    48: FourteenSegments(dp=0, l=0, m=0, n=1, k=1, j=0, h=0, g2=0, g1=0, f=1, e=1, d=1, c=1, b=1, a=1, char="0"),   # noqa: E741
-    49: FourteenSegments(dp=0, l=0, m=0, n=0, k=1, j=0, h=0, g2=0, g1=0, f=0, e=0, d=0, c=1, b=1, a=0, char="1"),   # noqa: E741
-    50: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1, g1=1, f=0, e=1, d=1, c=0, b=1, a=1, char="2"),   # noqa: E741
-    51: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1, g1=0, f=0, e=0, d=1, c=1, b=1, a=1, char="3"),   # noqa: E741
-    52: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1, g1=1, f=1, e=0, d=0, c=1, b=1, a=0, char="4"),   # noqa: E741
-    53: FourteenSegments(dp=0, l=1, m=0, n=0, k=0, j=0, h=0, g2=0, g1=1, f=1, e=0, d=1, c=0, b=0, a=1, char="5"),   # noqa: E741
-    54: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1, g1=1, f=1, e=1, d=1, c=1, b=0, a=1, char="6"),   # noqa: E741
-    55: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=0, g1=0, f=0, e=0, d=0, c=1, b=1, a=1, char="7"),   # noqa: E741
-    56: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1, g1=1, f=1, e=1, d=1, c=1, b=1, a=1, char="8"),   # noqa: E741
-    57: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1, g1=1, f=1, e=0, d=1, c=1, b=1, a=1, char="9"),   # noqa: E741
-    58: FourteenSegments(dp=0, l=0, m=1, n=0, k=0, j=1, h=0, g2=0, g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char=":"),   # noqa: E741
-    59: FourteenSegments(dp=0, l=0, m=0, n=1, k=0, j=1, h=0, g2=0, g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char=";"),   # noqa: E741
-    60: FourteenSegments(dp=0, l=1, m=0, n=0, k=1, j=0, h=0, g2=0, g1=1, f=0, e=0, d=0, c=0, b=0, a=0, char="<"),   # noqa: E741
-    61: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1, g1=1, f=0, e=0, d=1, c=0, b=0, a=0, char="="),   # noqa: E741
-    62: FourteenSegments(dp=0, l=0, m=0, n=1, k=0, j=0, h=1, g2=1, g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char=">"),   # noqa: E741
-    63: FourteenSegments(dp=1, l=0, m=1, n=0, k=0, j=0, h=0, g2=1, g1=0, f=0, e=0, d=0, c=0, b=1, a=1, char="?"),   # noqa: E741
-    64: FourteenSegments(dp=0, l=0, m=1, n=0, k=0, j=0, h=0, g2=0, g1=1, f=0, e=1, d=1, c=1, b=1, a=1, char="@"),   # noqa: E741
-    65: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1, g1=1, f=1, e=1, d=0, c=1, b=1, a=1, char="A"),   # noqa: E741
-    66: FourteenSegments(dp=0, l=0, m=1, n=0, k=0, j=1, h=0, g2=1, g1=0, f=0, e=0, d=1, c=1, b=1, a=1, char="B"),   # noqa: E741
-    67: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=0, g1=0, f=1, e=1, d=1, c=0, b=0, a=1, char="C"),   # noqa: E741
-    68: FourteenSegments(dp=0, l=0, m=1, n=0, k=0, j=1, h=0, g2=0, g1=0, f=0, e=0, d=1, c=1, b=1, a=1, char="D"),   # noqa: E741
-    69: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=0, g1=1, f=1, e=1, d=1, c=0, b=0, a=1, char="E"),   # noqa: E741
-    70: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=0, g1=1, f=1, e=1, d=0, c=0, b=0, a=1, char="F"),   # noqa: E741
-    71: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1, g1=0, f=1, e=1, d=1, c=1, b=0, a=1, char="G"),   # noqa: E741
-    72: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1, g1=1, f=1, e=1, d=0, c=1, b=1, a=0, char="H"),   # noqa: E741
-    73: FourteenSegments(dp=0, l=0, m=1, n=0, k=0, j=1, h=0, g2=0, g1=0, f=0, e=0, d=1, c=0, b=0, a=1, char="I"),   # noqa: E741
-    74: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=0, g1=0, f=0, e=1, d=1, c=1, b=1, a=0, char="J"),   # noqa: E741
-    75: FourteenSegments(dp=0, l=1, m=0, n=0, k=1, j=0, h=0, g2=0, g1=1, f=1, e=1, d=0, c=0, b=0, a=0, char="K"),   # noqa: E741
-    76: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=0, g1=0, f=1, e=1, d=1, c=0, b=0, a=0, char="L"),   # noqa: E741
-    77: FourteenSegments(dp=0, l=0, m=0, n=0, k=1, j=0, h=1, g2=0, g1=0, f=1, e=1, d=0, c=1, b=1, a=0, char="M"),   # noqa: E741
-    78: FourteenSegments(dp=0, l=1, m=0, n=0, k=0, j=0, h=1, g2=0, g1=0, f=1, e=1, d=0, c=1, b=1, a=0, char="N"),   # noqa: E741
-    79: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=0, g1=0, f=1, e=1, d=1, c=1, b=1, a=1, char="O"),   # noqa: E741
-    80: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1, g1=1, f=1, e=1, d=0, c=0, b=1, a=1, char="P"),   # noqa: E741
-    81: FourteenSegments(dp=0, l=1, m=0, n=0, k=0, j=0, h=0, g2=0, g1=0, f=1, e=1, d=1, c=1, b=1, a=1, char="Q"),   # noqa: E741
-    82: FourteenSegments(dp=0, l=1, m=0, n=0, k=0, j=0, h=0, g2=1, g1=1, f=1, e=1, d=0, c=0, b=1, a=1, char="R"),   # noqa: E741
-    83: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1, g1=1, f=1, e=0, d=1, c=1, b=0, a=1, char="S"),   # noqa: E741
-    84: FourteenSegments(dp=0, l=0, m=1, n=0, k=0, j=1, h=0, g2=0, g1=0, f=0, e=0, d=0, c=0, b=0, a=1, char="T"),   # noqa: E741
-    85: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=0, g1=0, f=1, e=1, d=1, c=1, b=1, a=0, char="U"),   # noqa: E741
-    86: FourteenSegments(dp=0, l=0, m=0, n=1, k=1, j=0, h=0, g2=0, g1=0, f=1, e=1, d=0, c=0, b=0, a=0, char="V"),   # noqa: E741
-    87: FourteenSegments(dp=0, l=1, m=0, n=1, k=0, j=0, h=0, g2=0, g1=0, f=1, e=1, d=0, c=1, b=1, a=0, char="W"),   # noqa: E741
-    88: FourteenSegments(dp=0, l=1, m=0, n=1, k=1, j=0, h=1, g2=0, g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char="X"),   # noqa: E741
-    89: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1, g1=1, f=1, e=0, d=1, c=1, b=1, a=0, char="Y"),   # noqa: E741
-    90: FourteenSegments(dp=0, l=0, m=0, n=1, k=1, j=0, h=0, g2=0, g1=0, f=0, e=0, d=1, c=0, b=0, a=1, char="Z"),   # noqa: E741
-    91: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=0, g1=0, f=1, e=1, d=1, c=0, b=0, a=1, char="["),   # noqa: E741
-    92: FourteenSegments(dp=0, l=1, m=0, n=0, k=0, j=0, h=1, g2=0, g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char="\""),  # noqa: E741
-    93: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=0, g1=0, f=0, e=0, d=1, c=1, b=1, a=1, char="]"),   # noqa: E741
-    94: FourteenSegments(dp=0, l=1, m=0, n=1, k=0, j=0, h=0, g2=0, g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char="^"),   # noqa: E741
-    95: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=0, g1=0, f=0, e=0, d=1, c=0, b=0, a=0, char="_"),   # noqa: E741
-    96: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=1, g2=0, g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char="`"),   # noqa: E741
-    97: FourteenSegments(dp=0, l=0, m=1, n=0, k=0, j=0, h=0, g2=0, g1=1, f=0, e=1, d=1, c=0, b=0, a=0, char="a"),   # noqa: E741
-    98: FourteenSegments(dp=0, l=1, m=0, n=0, k=0, j=0, h=0, g2=0, g1=1, f=1, e=1, d=1, c=0, b=0, a=0, char="b"),   # noqa: E741
-    99: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1, g1=1, f=0, e=1, d=1, c=0, b=0, a=0, char="c"),   # noqa: E741
-    100: FourteenSegments(dp=0, l=0, m=0, n=1, k=0, j=0, h=0, g2=1, g1=0, f=0, e=0, d=1, c=1, b=1, a=0, char="d"),  # noqa: E741
-    101: FourteenSegments(dp=0, l=0, m=0, n=1, k=0, j=0, h=0, g2=0, g1=1, f=0, e=1, d=1, c=0, b=0, a=0, char="e"),  # noqa: E741
-    102: FourteenSegments(dp=0, l=0, m=1, n=0, k=1, j=0, h=0, g2=1, g1=1, f=0, e=0, d=0, c=0, b=0, a=0, char="f"),  # noqa: E741
-    103: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=1, g2=1, g1=0, f=0, e=0, d=1, c=1, b=1, a=1, char="g"),  # noqa: E741
-    104: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1, g1=1, f=1, e=1, d=0, c=1, b=0, a=0, char="h"),  # noqa: E741
-    105: FourteenSegments(dp=0, l=0, m=1, n=0, k=0, j=0, h=0, g2=0, g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char="i"),  # noqa: E741
-    106: FourteenSegments(dp=0, l=0, m=0, n=1, k=0, j=1, h=0, g2=0, g1=0, f=0, e=1, d=0, c=0, b=0, a=0, char="j"),  # noqa: E741
-    107: FourteenSegments(dp=0, l=1, m=1, n=0, k=1, j=1, h=0, g2=0, g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char="k"),  # noqa: E741
-    108: FourteenSegments(dp=0, l=0, m=1, n=0, k=0, j=1, h=0, g2=0, g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char="l"),  # noqa: E741
-    109: FourteenSegments(dp=0, l=0, m=1, n=0, k=0, j=0, h=0, g2=1, g1=1, f=0, e=1, d=0, c=1, b=0, a=0, char="m"),  # noqa: E741
-    110: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1, g1=1, f=0, e=1, d=0, c=1, b=0, a=0, char="n"),  # noqa: E741
-    111: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1, g1=1, f=0, e=1, d=1, c=1, b=0, a=0, char="o"),  # noqa: E741
-    112: FourteenSegments(dp=0, l=0, m=0, n=0, k=1, j=0, h=0, g2=0, g1=1, f=1, e=1, d=0, c=0, b=0, a=1, char="p"),  # noqa: E741
-    113: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=1, g2=1, g1=0, f=0, e=0, d=0, c=1, b=1, a=1, char="q"),  # noqa: E741
-    114: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1, g1=1, f=0, e=1, d=0, c=0, b=0, a=0, char="r"),  # noqa: E741
-    115: FourteenSegments(dp=0, l=1, m=0, n=0, k=0, j=0, h=0, g2=1, g1=0, f=0, e=0, d=1, c=0, b=0, a=0, char="s"),  # noqa: E741
-    116: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=0, g1=1, f=1, e=1, d=1, c=0, b=0, a=0, char="t"),  # noqa: E741
-    117: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=0, g1=0, f=0, e=1, d=1, c=1, b=0, a=0, char="u"),  # noqa: E741
-    118: FourteenSegments(dp=0, l=0, m=0, n=1, k=0, j=0, h=0, g2=0, g1=0, f=0, e=1, d=0, c=0, b=0, a=0, char="v"),  # noqa: E741
-    119: FourteenSegments(dp=0, l=0, m=1, n=0, k=0, j=0, h=0, g2=0, g1=0, f=0, e=1, d=1, c=1, b=0, a=0, char="w"),  # noqa: E741
-    120: FourteenSegments(dp=0, l=1, m=0, n=1, k=1, j=0, h=1, g2=0, g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char="x"),  # noqa: E741
-    121: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=1, h=0, g2=1, g1=0, f=0, e=0, d=1, c=1, b=1, a=0, char="y"),  # noqa: E741
-    122: FourteenSegments(dp=0, l=0, m=0, n=1, k=0, j=0, h=0, g2=0, g1=1, f=0, e=0, d=1, c=0, b=0, a=0, char="z"),  # noqa: E741
-    123: FourteenSegments(dp=0, l=0, m=0, n=1, k=0, j=0, h=1, g2=0, g1=1, f=0, e=0, d=1, c=0, b=0, a=1, char="{"),  # noqa: E741
-    124: FourteenSegments(dp=0, l=0, m=1, n=0, k=0, j=1, h=0, g2=0, g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char="|"),  # noqa: E741
-    125: FourteenSegments(dp=0, l=1, m=0, n=0, k=1, j=0, h=0, g2=1, g1=0, f=0, e=0, d=1, c=0, b=0, a=1, char="}"),  # noqa: E741
-    126: FourteenSegments(dp=0, l=0, m=0, n=1, k=1, j=0, h=0, g2=1, g1=1, f=0, e=0, d=0, c=0, b=0, a=0, char="~"),  # noqa: E741
+    None: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=0,
+        g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char="?"),
+    32: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=0,
+        g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char=" "),   # noqa: E741
+    33: FourteenSegments(dp=1, l=0, m=0, n=0, k=0, j=0, h=0, g2=0,
+        g1=0, f=0, e=0, d=0, c=1, b=1, a=0, char="!"),   # noqa: E741
+    34: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=1, h=0, g2=0,
+        g1=0, f=0, e=0, d=0, c=0, b=1, a=0, char="\""),  # noqa: E741
+    35: FourteenSegments(dp=0, l=0, m=1, n=0, k=0, j=1, h=0, g2=1,
+        g1=1, f=0, e=0, d=1, c=1, b=1, a=0, char="#"),   # noqa: E741
+    36: FourteenSegments(dp=0, l=0, m=1, n=0, k=0, j=1, h=0, g2=1,
+        g1=1, f=1, e=0, d=1, c=1, b=0, a=1, char="$"),   # noqa: E741
+    37: FourteenSegments(dp=0, l=1, m=0, n=1, k=1, j=0, h=1, g2=1,
+        g1=1, f=1, e=0, d=0, c=1, b=0, a=0, char="%"),   # noqa: E741
+    38: FourteenSegments(dp=0, l=1, m=0, n=0, k=0, j=1, h=1, g2=0,
+        g1=1, f=0, e=1, d=1, c=0, b=0, a=1, char="&"),   # noqa: E741
+    39: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=1, h=0, g2=0,
+        g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char="'"),   # noqa: E741
+    40: FourteenSegments(dp=0, l=1, m=0, n=0, k=1, j=0, h=0, g2=0,
+        g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char="("),   # noqa: E741
+    41: FourteenSegments(dp=0, l=0, m=0, n=1, k=0, j=0, h=1, g2=0,
+        g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char=")"),   # noqa: E741
+    42: FourteenSegments(dp=0, l=1, m=1, n=1, k=1, j=1, h=1, g2=1,
+        g1=1, f=0, e=0, d=0, c=0, b=0, a=0, char="*"),   # noqa: E741
+    43: FourteenSegments(dp=0, l=0, m=1, n=0, k=0, j=1, h=0, g2=1,
+        g1=1, f=0, e=0, d=0, c=0, b=0, a=0, char="+"),   # noqa: E741
+    44: FourteenSegments(dp=0, l=0, m=0, n=1, k=0, j=0, h=0, g2=0,
+        g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char=","),   # noqa: E741
+    45: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1,
+        g1=1, f=0, e=0, d=0, c=0, b=0, a=0, char="-"),   # noqa: E741
+    46: FourteenSegments(dp=1, l=0, m=0, n=0, k=0, j=0, h=0, g2=0,
+        g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char="."),   # noqa: E741
+    47: FourteenSegments(dp=0, l=0, m=0, n=1, k=1, j=0, h=0, g2=0,
+        g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char="/"),   # noqa: E741
+    48: FourteenSegments(dp=0, l=0, m=0, n=1, k=1, j=0, h=0, g2=0,
+        g1=0, f=1, e=1, d=1, c=1, b=1, a=1, char="0"),   # noqa: E741
+    49: FourteenSegments(dp=0, l=0, m=0, n=0, k=1, j=0, h=0, g2=0,
+        g1=0, f=0, e=0, d=0, c=1, b=1, a=0, char="1"),   # noqa: E741
+    50: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1,
+        g1=1, f=0, e=1, d=1, c=0, b=1, a=1, char="2"),   # noqa: E741
+    51: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1,
+        g1=0, f=0, e=0, d=1, c=1, b=1, a=1, char="3"),   # noqa: E741
+    52: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1,
+        g1=1, f=1, e=0, d=0, c=1, b=1, a=0, char="4"),   # noqa: E741
+    53: FourteenSegments(dp=0, l=1, m=0, n=0, k=0, j=0, h=0, g2=0,
+        g1=1, f=1, e=0, d=1, c=0, b=0, a=1, char="5"),   # noqa: E741
+    54: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1,
+        g1=1, f=1, e=1, d=1, c=1, b=0, a=1, char="6"),   # noqa: E741
+    55: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=0,
+        g1=0, f=0, e=0, d=0, c=1, b=1, a=1, char="7"),   # noqa: E741
+    56: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1,
+        g1=1, f=1, e=1, d=1, c=1, b=1, a=1, char="8"),   # noqa: E741
+    57: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1,
+        g1=1, f=1, e=0, d=1, c=1, b=1, a=1, char="9"),   # noqa: E741
+    58: FourteenSegments(dp=0, l=0, m=1, n=0, k=0, j=1, h=0, g2=0,
+        g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char=":"),   # noqa: E741
+    59: FourteenSegments(dp=0, l=0, m=0, n=1, k=0, j=1, h=0, g2=0,
+        g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char=";"),   # noqa: E741
+    60: FourteenSegments(dp=0, l=1, m=0, n=0, k=1, j=0, h=0, g2=0,
+        g1=1, f=0, e=0, d=0, c=0, b=0, a=0, char="<"),   # noqa: E741
+    61: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1,
+        g1=1, f=0, e=0, d=1, c=0, b=0, a=0, char="="),   # noqa: E741
+    62: FourteenSegments(dp=0, l=0, m=0, n=1, k=0, j=0, h=1, g2=1,
+        g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char=">"),   # noqa: E741
+    63: FourteenSegments(dp=1, l=0, m=1, n=0, k=0, j=0, h=0, g2=1,
+        g1=0, f=0, e=0, d=0, c=0, b=1, a=1, char="?"),   # noqa: E741
+    64: FourteenSegments(dp=0, l=0, m=1, n=0, k=0, j=0, h=0, g2=0,
+        g1=1, f=0, e=1, d=1, c=1, b=1, a=1, char="@"),   # noqa: E741
+    65: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1,
+        g1=1, f=1, e=1, d=0, c=1, b=1, a=1, char="A"),   # noqa: E741
+    66: FourteenSegments(dp=0, l=0, m=1, n=0, k=0, j=1, h=0, g2=1,
+        g1=0, f=0, e=0, d=1, c=1, b=1, a=1, char="B"),   # noqa: E741
+    67: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=0,
+        g1=0, f=1, e=1, d=1, c=0, b=0, a=1, char="C"),   # noqa: E741
+    68: FourteenSegments(dp=0, l=0, m=1, n=0, k=0, j=1, h=0, g2=0,
+        g1=0, f=0, e=0, d=1, c=1, b=1, a=1, char="D"),   # noqa: E741
+    69: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=0,
+        g1=1, f=1, e=1, d=1, c=0, b=0, a=1, char="E"),   # noqa: E741
+    70: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=0,
+        g1=1, f=1, e=1, d=0, c=0, b=0, a=1, char="F"),   # noqa: E741
+    71: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1,
+        g1=0, f=1, e=1, d=1, c=1, b=0, a=1, char="G"),   # noqa: E741
+    72: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1,
+        g1=1, f=1, e=1, d=0, c=1, b=1, a=0, char="H"),   # noqa: E741
+    73: FourteenSegments(dp=0, l=0, m=1, n=0, k=0, j=1, h=0, g2=0,
+        g1=0, f=0, e=0, d=1, c=0, b=0, a=1, char="I"),   # noqa: E741
+    74: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=0,
+        g1=0, f=0, e=1, d=1, c=1, b=1, a=0, char="J"),   # noqa: E741
+    75: FourteenSegments(dp=0, l=1, m=0, n=0, k=1, j=0, h=0, g2=0,
+        g1=1, f=1, e=1, d=0, c=0, b=0, a=0, char="K"),   # noqa: E741
+    76: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=0,
+        g1=0, f=1, e=1, d=1, c=0, b=0, a=0, char="L"),   # noqa: E741
+    77: FourteenSegments(dp=0, l=0, m=0, n=0, k=1, j=0, h=1, g2=0,
+        g1=0, f=1, e=1, d=0, c=1, b=1, a=0, char="M"),   # noqa: E741
+    78: FourteenSegments(dp=0, l=1, m=0, n=0, k=0, j=0, h=1, g2=0,
+        g1=0, f=1, e=1, d=0, c=1, b=1, a=0, char="N"),   # noqa: E741
+    79: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=0,
+        g1=0, f=1, e=1, d=1, c=1, b=1, a=1, char="O"),   # noqa: E741
+    80: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1,
+        g1=1, f=1, e=1, d=0, c=0, b=1, a=1, char="P"),   # noqa: E741
+    81: FourteenSegments(dp=0, l=1, m=0, n=0, k=0, j=0, h=0, g2=0,
+        g1=0, f=1, e=1, d=1, c=1, b=1, a=1, char="Q"),   # noqa: E741
+    82: FourteenSegments(dp=0, l=1, m=0, n=0, k=0, j=0, h=0, g2=1,
+        g1=1, f=1, e=1, d=0, c=0, b=1, a=1, char="R"),   # noqa: E741
+    83: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1,
+        g1=1, f=1, e=0, d=1, c=1, b=0, a=1, char="S"),   # noqa: E741
+    84: FourteenSegments(dp=0, l=0, m=1, n=0, k=0, j=1, h=0, g2=0,
+        g1=0, f=0, e=0, d=0, c=0, b=0, a=1, char="T"),   # noqa: E741
+    85: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=0,
+        g1=0, f=1, e=1, d=1, c=1, b=1, a=0, char="U"),   # noqa: E741
+    86: FourteenSegments(dp=0, l=0, m=0, n=1, k=1, j=0, h=0, g2=0,
+        g1=0, f=1, e=1, d=0, c=0, b=0, a=0, char="V"),   # noqa: E741
+    87: FourteenSegments(dp=0, l=1, m=0, n=1, k=0, j=0, h=0, g2=0,
+        g1=0, f=1, e=1, d=0, c=1, b=1, a=0, char="W"),   # noqa: E741
+    88: FourteenSegments(dp=0, l=1, m=0, n=1, k=1, j=0, h=1, g2=0,
+        g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char="X"),   # noqa: E741
+    89: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1,
+        g1=1, f=1, e=0, d=1, c=1, b=1, a=0, char="Y"),   # noqa: E741
+    90: FourteenSegments(dp=0, l=0, m=0, n=1, k=1, j=0, h=0, g2=0,
+        g1=0, f=0, e=0, d=1, c=0, b=0, a=1, char="Z"),   # noqa: E741
+    91: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=0,
+        g1=0, f=1, e=1, d=1, c=0, b=0, a=1, char="["),   # noqa: E741
+    92: FourteenSegments(dp=0, l=1, m=0, n=0, k=0, j=0, h=1, g2=0,
+        g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char="\""),  # noqa: E741
+    93: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=0,
+        g1=0, f=0, e=0, d=1, c=1, b=1, a=1, char="]"),   # noqa: E741
+    94: FourteenSegments(dp=0, l=1, m=0, n=1, k=0, j=0, h=0, g2=0,
+        g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char="^"),   # noqa: E741
+    95: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=0,
+        g1=0, f=0, e=0, d=1, c=0, b=0, a=0, char="_"),   # noqa: E741
+    96: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=1, g2=0,
+        g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char="`"),   # noqa: E741
+    97: FourteenSegments(dp=0, l=0, m=1, n=0, k=0, j=0, h=0, g2=0,
+        g1=1, f=0, e=1, d=1, c=0, b=0, a=0, char="a"),   # noqa: E741
+    98: FourteenSegments(dp=0, l=1, m=0, n=0, k=0, j=0, h=0, g2=0,
+        g1=1, f=1, e=1, d=1, c=0, b=0, a=0, char="b"),   # noqa: E741
+    99: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1,
+        g1=1, f=0, e=1, d=1, c=0, b=0, a=0, char="c"),   # noqa: E741
+    100: FourteenSegments(dp=0, l=0, m=0, n=1, k=0, j=0, h=0, g2=1,
+        g1=0, f=0, e=0, d=1, c=1, b=1, a=0, char="d"),  # noqa: E741
+    101: FourteenSegments(dp=0, l=0, m=0, n=1, k=0, j=0, h=0, g2=0,
+        g1=1, f=0, e=1, d=1, c=0, b=0, a=0, char="e"),  # noqa: E741
+    102: FourteenSegments(dp=0, l=0, m=1, n=0, k=1, j=0, h=0, g2=1,
+        g1=1, f=0, e=0, d=0, c=0, b=0, a=0, char="f"),  # noqa: E741
+    103: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=1, g2=1,
+        g1=0, f=0, e=0, d=1, c=1, b=1, a=1, char="g"),  # noqa: E741
+    104: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1,
+        g1=1, f=1, e=1, d=0, c=1, b=0, a=0, char="h"),  # noqa: E741
+    105: FourteenSegments(dp=0, l=0, m=1, n=0, k=0, j=0, h=0, g2=0,
+        g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char="i"),  # noqa: E741
+    106: FourteenSegments(dp=0, l=0, m=0, n=1, k=0, j=1, h=0, g2=0,
+        g1=0, f=0, e=1, d=0, c=0, b=0, a=0, char="j"),  # noqa: E741
+    107: FourteenSegments(dp=0, l=1, m=1, n=0, k=1, j=1, h=0, g2=0,
+        g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char="k"),  # noqa: E741
+    108: FourteenSegments(dp=0, l=0, m=1, n=0, k=0, j=1, h=0, g2=0,
+        g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char="l"),  # noqa: E741
+    109: FourteenSegments(dp=0, l=0, m=1, n=0, k=0, j=0, h=0, g2=1,
+        g1=1, f=0, e=1, d=0, c=1, b=0, a=0, char="m"),  # noqa: E741
+    110: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1,
+        g1=1, f=0, e=1, d=0, c=1, b=0, a=0, char="n"),  # noqa: E741
+    111: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1,
+        g1=1, f=0, e=1, d=1, c=1, b=0, a=0, char="o"),  # noqa: E741
+    112: FourteenSegments(dp=0, l=0, m=0, n=0, k=1, j=0, h=0, g2=0,
+        g1=1, f=1, e=1, d=0, c=0, b=0, a=1, char="p"),  # noqa: E741
+    113: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=1, g2=1,
+        g1=0, f=0, e=0, d=0, c=1, b=1, a=1, char="q"),  # noqa: E741
+    114: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=1,
+        g1=1, f=0, e=1, d=0, c=0, b=0, a=0, char="r"),  # noqa: E741
+    115: FourteenSegments(dp=0, l=1, m=0, n=0, k=0, j=0, h=0, g2=1,
+        g1=0, f=0, e=0, d=1, c=0, b=0, a=0, char="s"),  # noqa: E741
+    116: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=0,
+        g1=1, f=1, e=1, d=1, c=0, b=0, a=0, char="t"),  # noqa: E741
+    117: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=0, h=0, g2=0,
+        g1=0, f=0, e=1, d=1, c=1, b=0, a=0, char="u"),  # noqa: E741
+    118: FourteenSegments(dp=0, l=0, m=0, n=1, k=0, j=0, h=0, g2=0,
+        g1=0, f=0, e=1, d=0, c=0, b=0, a=0, char="v"),  # noqa: E741
+    119: FourteenSegments(dp=0, l=0, m=1, n=0, k=0, j=0, h=0, g2=0,
+        g1=0, f=0, e=1, d=1, c=1, b=0, a=0, char="w"),  # noqa: E741
+    120: FourteenSegments(dp=0, l=1, m=0, n=1, k=1, j=0, h=1, g2=0,
+        g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char="x"),  # noqa: E741
+    121: FourteenSegments(dp=0, l=0, m=0, n=0, k=0, j=1, h=0, g2=1,
+        g1=0, f=0, e=0, d=1, c=1, b=1, a=0, char="y"),  # noqa: E741
+    122: FourteenSegments(dp=0, l=0, m=0, n=1, k=0, j=0, h=0, g2=0,
+        g1=1, f=0, e=0, d=1, c=0, b=0, a=0, char="z"),  # noqa: E741
+    123: FourteenSegments(dp=0, l=0, m=0, n=1, k=0, j=0, h=1, g2=0,
+        g1=1, f=0, e=0, d=1, c=0, b=0, a=1, char="{"),  # noqa: E741
+    124: FourteenSegments(dp=0, l=0, m=1, n=0, k=0, j=1, h=0, g2=0,
+        g1=0, f=0, e=0, d=0, c=0, b=0, a=0, char="|"),  # noqa: E741
+    125: FourteenSegments(dp=0, l=1, m=0, n=0, k=1, j=0, h=0, g2=1,
+        g1=0, f=0, e=0, d=1, c=0, b=0, a=1, char="}"),  # noqa: E741
+    126: FourteenSegments(dp=0, l=0, m=0, n=1, k=1, j=0, h=0, g2=1,
+        g1=1, f=0, e=0, d=0, c=0, b=0, a=0, char="~"),  # noqa: E741
 }
 
 

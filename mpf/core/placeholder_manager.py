@@ -642,9 +642,7 @@ class BasePlaceholderManager(MpfController):
         """Initialize."""
         super().__init__(machine)
         self._eval_methods = {
-            ast.Num: self._eval_num,
-            ast.Str: self._eval_str,
-            ast.NameConstant: self._eval_constant,
+            ast.Constant: self._eval_constant,
             ast.BinOp: self._eval_bin_op,
             ast.UnaryOp: self._eval_unary_op,
             ast.Compare: self._eval_compare,
@@ -667,18 +665,6 @@ class BasePlaceholderManager(MpfController):
             return ast.parse(template_str, mode='eval').body
         except SyntaxError:
             raise AssertionError('Failed to parse template "{}"'.format(template_str))
-
-    @staticmethod
-    def _eval_num(node, variables, subscribe):
-        del variables
-        del subscribe
-        return node.n, []
-
-    @staticmethod
-    def _eval_str(node, variables, subscribe):
-        del variables
-        del subscribe
-        return node.s, []
 
     @staticmethod
     def _eval_constant(node, variables, subscribe):

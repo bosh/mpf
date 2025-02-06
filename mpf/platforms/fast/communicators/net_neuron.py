@@ -172,7 +172,11 @@ class FastNetNeuronCommunicator(FastSerialCommunicator):
         model = model.strip('\x00')
         model = ('-').join(model.split('-')[:3])  # Remove the revision dash if it's there
 
+        name = self.io_loop[node_id]
+
         if not model or model == '!Node Not Found!':
+            self.log.error("No node board found at I/O position %s, board %s will not be available. " +
+                           "Please check your cable connections.", node_id, name)
             self.done_processing_msg_response()  # TODO good candidate for retry option
             return
 
@@ -180,7 +184,6 @@ class FastNetNeuronCommunicator(FastSerialCommunicator):
             self.done_processing_msg_response()
             return
 
-        name = self.io_loop[node_id]
         # Fp-I/O-3208-2 -> FP-I/O-3208
         model_string_from_config = ('-').join(self.config['io_loop'][name]['model'].split('-')[:3]).upper()
 
