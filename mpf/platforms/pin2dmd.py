@@ -107,6 +107,7 @@ class Pin2DmdDevice(DmdPlatformInterface):
 
         self.device.write(0x01, data)
 
+    # pylint: disable-msg=too-many-locals
     def _send_frame(self, buffer):
         if self.resolution == "128x32":
             elements = 2048
