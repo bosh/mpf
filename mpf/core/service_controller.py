@@ -9,6 +9,7 @@ from collections import namedtuple
 from typing import List
 
 from mpf.core.mpf_controller import MpfController
+from mpf.devices.dual_wound_coil import DualWoundCoil
 
 SwitchMap = namedtuple("SwitchMap", ["board", "switch"])
 CoilMap = namedtuple("CoilMap", ["board", "coil"])
@@ -92,8 +93,10 @@ class ServiceController(MpfController):
         """Return a map of all coils in the machine."""
         coil_map = []
         for coil in self.machine.coils.values():
-            assert coil.hw_driver is not None
-            coil_map.append(CoilMap(coil.hw_driver.get_board_name(), coil))
+            if isinstance(coil, DualWoundCoil):
+                self.info_log("Coil mapping skipped dual-wound coil %s", coil.name)
+            else:
+                coil_map.append(CoilMap(coil.hw_driver.get_board_name(), coil))
 
         # sort by board + driver number
         if do_sort:

@@ -34,6 +34,10 @@ coils:
         number: 10
         label: Fourth coil
 
+dual_wound_coils:
+    c_dualwound_1_2:
+        hold_coil: c_test
+        main_coil: c_test2
 
 switches:
     s_door_open:
