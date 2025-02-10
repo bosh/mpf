@@ -1666,10 +1666,11 @@ slide_player:
     expire: single|secs|None
     slide: single|str|None
     tokens: dict|str:str|None
-    action: single|enum(play,remove,method,update,preload,queue,queue_first,queue_immediate)|play
+    action: single|enum(play,remove,method,animation,update,preload,queue,queue_first,queue_immediate)|play
     queue: single|str|None
     max_queue_time: single|secs|None
-    method: single|str|None
+    animation: ignore
+    method: ignore
 snux:
     __valid_in__: machine
     __type__: config
@@ -2018,7 +2019,8 @@ widget_player:
     __type__: config_player
     priority: single|int_or_token|None
     slide: single|str|None
-    action: single|enum(play,remove,update,preload,method)|play
+    action: single|enum(play,remove,update,preload,animation,method)|play
+    animation: ignore
     method: ignore
     key: single|str|None
     target: single|str|None
