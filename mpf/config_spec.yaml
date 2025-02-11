@@ -290,7 +290,7 @@ bonus_mode_settings:
     hurry_up_delay_ms: single|ms|500
     hurry_up_event: single|event_handler|flipper_cancel
     end_bonus_event: single|event_handler|None
-    keep_multiplier: single|template_bool|false
+    keep_multiplier: single|template_bool|False
     bonus_entries: list|subconfig(bonus_entries)|
     rounding_value: single|int|None
     rounding_direction: single|str|up
@@ -1308,7 +1308,7 @@ player_vars:
 playfields:
     __valid_in__: machine
     __type__: device
-    enable_ball_search: single|template_bool|None
+    enable_ball_search: single|template_bool|False
     ball_search_timeout: single|ms|15s
     ball_search_interval: single|ms|150ms
     ball_search_phase_1_searches: single|int|3
