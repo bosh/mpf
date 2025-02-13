@@ -653,8 +653,6 @@ class BasePlaceholderManager(MpfController):
             ast.IfExp: self._eval_if,
             ast.Tuple: self._eval_tuple,
         }
-        if hasattr(ast, "Constant"):
-            self._eval_methods[ast.Constant] = self._eval_constant
 
     def _eval_tuple(self, node, variables, subscribe):
         return tuple([self._eval(x, variables, subscribe) for x in node.elts])
