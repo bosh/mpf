@@ -29,7 +29,7 @@ class Driver(SystemWideDevice):
     collection = 'coils'
     class_label = 'coil'
 
-    __slots__ = ["hw_driver", "delay", "__dict__", "_pulse_ms", "_timed_enable_ms"]
+    __slots__ = ["hw_driver", "delay", "__dict__", "_pulse_ms", "_timed_enable_ms", "_hold_power"]
 
     def __init__(self, machine: MachineController, name: str) -> None:
         """Initialize driver."""
@@ -39,6 +39,7 @@ class Driver(SystemWideDevice):
         self.platform = None                # type: Optional[DriverPlatform]
         self._pulse_ms = None
         self._timed_enable_ms = None
+        self._hold_power = None
 
     @classmethod
     def device_class_init(cls, machine: MachineController):
@@ -91,6 +92,14 @@ class Driver(SystemWideDevice):
             future.add_done_callback(self._calculate_timed_enable_ms_placeholder)
         else:
             self._timed_enable_ms = self.machine.config['mpf']['default_timed_enable_ms']
+
+    def _calculate_hold_power_placeholder(self, *args):
+        del args
+        if self.config['default_hold_power'] is not None:
+            self._hold_power, future = self.config['default_hold_power'].evaluate_and_subscribe({})
+            future.add_done_callback(self._calculate_hold_power_placeholder)
+        else:
+            self._hold_power = self.machine.config['mpf']['default_hold_power']
 
     async def _initialize(self):
         await super()._initialize()
@@ -146,8 +155,8 @@ class Driver(SystemWideDevice):
 
         If hold_power is None it will use the default_hold_power. Additionally it will verify the limits.
         """
-        if hold_power is None and self.config['default_hold_power']:
-            hold_power = self.config['default_hold_power']
+        if hold_power is None and self._hold_power:
+            hold_power = self._hold_power
 
         if hold_power is None and self.config['max_hold_power']:
             hold_power = self.config['max_hold_power']
@@ -166,7 +175,7 @@ class Driver(SystemWideDevice):
             max_hold_power = self.config['max_hold_power']
         elif self.config['allow_enable']:
             max_hold_power = 1.0
-        elif self.config['default_hold_power']:
+        elif self._hold_power:
             max_hold_power = self.config['default_hold_power']
 
         if hold_power > max_hold_power:
