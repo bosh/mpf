@@ -402,7 +402,7 @@ class FastSerialCommunicator(LogMixin):
 
     def _watchdog_task(self):
         """Sends the watchdog command."""
-        self.send_and_forget(self.watchdog_cmd)
+        self.send_and_forget(self.watchdog_cmd) #TODO actually handle WD:D and WP:P processing to detect request to shutdown
 
     async def _socket_reader(self):
         # Read coroutine
