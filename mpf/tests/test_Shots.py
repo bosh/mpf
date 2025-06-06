@@ -1057,7 +1057,7 @@ class TestShots(MpfTestCase):
         test_mode.start()
 
         # Default and true should preserve the enable, false should start false again
-        # self.assertFalse(shot_pe_test_property_disabled.enabled) #TODO this is failing
+        self.assertFalse(shot_pe_test_property_disabled.enabled) #TODO this is failing
         self.assertTrue(shot_pe_test_default.enabled)
         self.assertTrue(shot_pe_test_property_enabled.enabled)
         self.assertTrue(shot_pe_test_property_enabled_default_enabled.enabled)
