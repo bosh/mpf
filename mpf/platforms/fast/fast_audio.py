@@ -126,6 +126,8 @@ class FASTAudioInterface(LogMixin):
         self.platform.machine.events.add_handler('fast_audio_pulse_lcd_pin', self.pulse_lcd_pin)
         self.platform.machine.events.add_handler('fast_audio_pulse_power_pin', self.pulse_power_pin)
         self.platform.machine.events.add_handler('fast_audio_pulse_reset_pin', self.pulse_reset_pin)
+        self.platform.machine.events.add_handler('fast_audio_headphones_v1', self.fast_audio_headphones_v1)
+        self.platform.machine.events.add_handler('fast_audio_headphones_v2', self.fast_audio_headphones_v2)
 
     def _create_levels_list(self, amp_name):
         steps = self.communicator.config[f'{amp_name}_steps']
@@ -188,6 +190,21 @@ class FASTAudioInterface(LogMixin):
         change = int(change)
         self.communicator.set_volume(amp_name, self.get_volume(amp_name) + change,
                                      send_now=True)
+
+    def fast_audio_headphones_v1(self, **kwargs):
+        """Set audio to setting 1
+        wip
+        """
+        del kwargs
+        self.communicator.set_setting_v1(send_now=True)
+ 
+    def fast_audio_headphones_v2(self, **kwargs):
+        """Set audio to setting 2
+        wip
+        """
+        del kwargs
+        self.communicator.set_setting_v2(send_now=True)
+
 
     def restore_volume(self, amp_name, **kwargs):
         """Restore the volume to the value to the machine var value."""

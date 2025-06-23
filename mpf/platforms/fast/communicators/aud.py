@@ -74,18 +74,18 @@ class FastAudCommunicator(FastSerialCommunicator):
         """Write a new configuration to the platform."""
         byte = '00'
         if self.amps['main']['enabled']:
-            byte = Util.set_bit(byte, 0)
+            byte = Util.set_bit(byte, 0) # AUDIO_MAIN_ENABLED_BIT
         if self.amps['sub']['enabled']:
-            byte = Util.set_bit(byte, 1)
+            byte = Util.set_bit(byte, 1) # AUDIO_SUB_ENABLED_BIT
         if self.amps['headphones']['enabled']:
-            if not self.phones_level:  # line level
-                byte = Util.set_bit(byte, 2)
-                byte = Util.set_bit(byte, 3)
-            else:  # phones level
-                if self.phones_mute:
-                    byte = Util.set_bit(byte, 3)
-                else:
-                    byte = Util.set_bit(byte, 2)
+            if not self.phones_level:        # line level = norm, no duck
+                byte = Util.set_bit(byte, 2) # AUDIO_HEADPHONE_MODE_NORM
+                byte = Util.set_bit(byte, 3) # AUDIO_HEADPHONE_MODE_DUCK
+            else:  # phones level = either norm or duck
+                if self.phones_mute: # duck, no norm
+                    byte = Util.set_bit(byte, 3) # AUDIO_HEADPHONE_MODE_DUCK
+                else: # norm, no duck
+                    byte = Util.set_bit(byte, 2) # AUDIO_HEADPHONE_MODE_NORM
 
         self.current_config_byte = byte
 
@@ -107,6 +107,20 @@ class FastAudCommunicator(FastSerialCommunicator):
     def get_volume(self, amp_name):
         """Get the current internal volume of the amp."""
         return self.amps[amp_name]['volume']
+
+    def set_setting_v1(self, send_now=True):
+        """setting v1 test"""
+        # change some setting
+        self.disable_amp("main", send_now=False)
+        self.disable_amp("sub", send_now=False)
+        self.update_config(send_now)
+
+    def set_setting_v2(self, send_now=True):
+        """setting v2 test"""
+        # change some setting again
+        self.enable_amp("main", send_now=False)
+        self.enable_amp("sub", send_now=False)
+        self.update_config(send_now)
 
     def enable_amp(self, amp_name, send_now=True):
         """Enable a specific amp."""
