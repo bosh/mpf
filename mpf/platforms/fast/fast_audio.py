@@ -192,25 +192,25 @@ class FASTAudioInterface(LogMixin):
                                      send_now=True)
 
     def fast_audio_headphones_v1(self, **kwargs):
-        """Set audio to setting 1
+        """Set audio to setting 1.
+
         wip
         """
         del kwargs
         self.communicator.set_setting_v1(send_now=True)
- 
+
     def fast_audio_headphones_v2(self, **kwargs):
-        """Set audio to setting 2
+        """Set audio to setting 2.
+
         wip
         """
         del kwargs
         self.communicator.set_setting_v2(send_now=True)
 
-
     def restore_volume(self, amp_name, **kwargs):
         """Restore the volume to the value to the machine var value."""
         del kwargs
-        self.communicator.set_volume(amp_name, self.get_volume(amp_name),
-                                     send_now=True)
+        self.communicator.set_volume(amp_name, self.get_volume(amp_name), send_now=True)
 
     def pulse_lcd_pin(self, pin, ms=None, **kwargs):
         """Pulse the specified LCD pin for the specified number of milliseconds.
