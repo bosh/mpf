@@ -113,6 +113,9 @@ class FastAudCommunicator(FastSerialCommunicator):
         # change some setting
         self.disable_amp("main", send_now=False)
         self.disable_amp("sub", send_now=False)
+        self.enable_amp("headphones", send_now=False)
+        self.phones_level = not self.phones_level  # flip each time
+
         self.update_config(send_now)
 
     def set_setting_v2(self, send_now=True):
@@ -120,6 +123,7 @@ class FastAudCommunicator(FastSerialCommunicator):
         # change some setting again
         self.enable_amp("main", send_now=False)
         self.enable_amp("sub", send_now=False)
+        self.phones_mute = not self.phones_mute  # flip each time
         self.update_config(send_now)
 
     def enable_amp(self, amp_name, send_now=True):
