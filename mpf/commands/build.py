@@ -24,6 +24,13 @@ class Command(MpfCommandLineParser):
         self.machine_path = machine_path
         self.args = remaining_args
 
+        print(self.args)
+        if self.args.help:
+            print("Build help")
+            sys.exit()
+            return
+
+
         parser = argparse.ArgumentParser(
             description='Build MPF production config.')
 

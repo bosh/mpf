@@ -81,7 +81,7 @@ class MpfCommandLineParser:
 
     def parse_args(self):
         """Parse command line arguments."""
-        parser = argparse.ArgumentParser(description='MPF Command')
+        parser = argparse.ArgumentParser(description='MPF Command', conflict_handler='resolve')
 
         parser.add_argument("machine_path", help="Path of the machine folder.",
                             default=None, nargs='?')
@@ -96,6 +96,9 @@ class MpfCommandLineParser:
                             help="Displays the MPF, config file, and BCP "
                                  "version info and exits")
 
+        parser.add_argument("-h", "--help",
+                            action="store_true", dest="help_override", default=False,
+                            help="Bosh hacked the help")
         # the problem with parser.add_argument is it will take the first
         # positional argument it finds for machine_path and set it to the
         # machine path, regardless of what's in front of it. So for example,
@@ -117,6 +120,12 @@ class MpfCommandLineParser:
         # so that the game parser also knows to run in production mode.
         if args.production:
             remaining_args.append("-P")
+
+        # If the help arg was pulled here, re-insert it to the remaining args
+        # so that the game parser also knows to run in help mode.
+        if args.help_override:
+            remaining_args.append("--help")
+
         machine_path = self.get_machine_path(args.machine_path, args.production)
 
         return machine_path, remaining_args
