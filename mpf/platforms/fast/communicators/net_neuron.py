@@ -20,8 +20,8 @@ class FastNetNeuronCommunicator(FastSerialCommunicator):
     MIN_FW = version.parse('2.06')
     IO_MIN_FW = version.parse('1.09')
     MAX_IO_BOARDS = 9
-    MAX_SWITCHES = 104
-    MAX_DRIVERS = 48
+    MAX_SWITCHES = 160
+    MAX_DRIVERS = 85
     IGNORED_MESSAGES = ['WD:P', 'TL:P']
     TRIGGER_CMD = 'TL'
     DRIVER_CMD = 'DL'
