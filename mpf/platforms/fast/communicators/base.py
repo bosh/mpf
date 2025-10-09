@@ -250,66 +250,172 @@ class FastSerialCommunicator(LogMixin):
                     raise e
             self.writer = None
 
-    async def send_and_wait_for_response(self, msg, pause_sending_until, log_msg=None):
-        """Sends a message and awaits until the response is received.
+    # async def send_and_wait_for_response(self, msg, pause_sending_until, log_msg=None):
+    #     """Sends a message and awaits until the response is received.
 
-        Parameters
-        ----------
-            msg (_type_): Message to send
-            pause_sending_until (_type_): Response to wait for before sending the next message
-            log_msg (_type_, optional): Optional version of the message that will be used in logs.
-                Typically used with binary messages so the longs can contain human readable versions.
-                Defaults to None which means the actual msg will be used in the logs.
+    #     Parameters
+    #     ----------
+    #         msg (_type_): Message to send
+    #         pause_sending_until (_type_): Response to wait for before sending the next message
+    #         log_msg (_type_, optional): Optional version of the message that will be used in logs.
+    #             Typically used with binary messages so the longs can contain human readable versions.
+    #             Defaults to None which means the actual msg will be used in the logs.
+    #     """
+    #     await self.no_response_waiting.wait()
+    #     self.no_response_waiting.clear()
+    #     self.send_with_confirmation(msg, pause_sending_until, log_msg)
+
+    async def send_and_wait_for_response(self, msg, pause_sending_until, log_msg=None):
+        """Send a message and block until the matching response ARRIVES.
+
+        'done_waiting' is set by the parser *when the response arrives*.
+        The caller should not assume processing is finished yet.
         """
+        # Ensure no other in-flight waits
         await self.no_response_waiting.wait()
         self.no_response_waiting.clear()
-        self.send_with_confirmation(msg, pause_sending_until, log_msg)
 
-    # pylint: disable-msg=too-many-arguments
-    async def send_and_wait_for_response_processed(self, msg, pause_sending_until, timeout=1,
-                                                   max_retries=0, log_msg=None):
-        """Send a message and wait for the response to be processed.
-
-        Unlike send_and_wait_for_response(), this method will not release the wait when the response is received.
-        Instead, the wait must manually be released by calling done_processing_msg_response(). This is useful for
-        messages that require multiple responses, or for messages that require real processing where you don't want
-        the next messages to be sent until the processing is complete.
-
-        Parameters
-        ----------
-            msg (_type_): Message to send
-            pause_sending_until (_type_): Response to wait for before sending the next message
-            timeout (int, optional): The time (in seconds) this communicator will wait for a response.
-                If a response is not received by then (based on the pause_sending_until), the message will be resent.
-                Defaults to 1.
-            max_retries (int, optional): How many times the message will be resent if the response is not
-                received by the timeout. -1 means unlimited retries. Defaults to 0.
-            log_msg (_type_, optional): Optional version of the message that will be used in logs.
-                Typically used with binary messages so the longs can contain human readable versions.
-                Defaults to None which means the actual msg will be used in the logs.
-        """
+        # We are about to wait for a *new* response
         self.done_waiting.clear()
 
-        retries = 0
+        # Non-blocking send
+        self.send_with_confirmation(msg, pause_sending_until, log_msg)
 
-        while max_retries == -1 or retries <= max_retries:
+        try:
+            # Wait until the parser signals that the matching response ARRIVED
+            await self.done_waiting.wait()
+        finally:
+            # Do NOT set no_response_waiting here; that’s for "processed" phase
+            # We leave the gate closed while the handler finishes processing.
+            pass
+
+
+    # # pylint: disable-msg=too-many-arguments
+    # async def send_and_wait_for_response_processed(self, msg, pause_sending_until, timeout=1,
+    #                                                max_retries=0, log_msg=None):
+    #     """Send a message and wait for the response to be processed.
+
+    #     Unlike send_and_wait_for_response(), this method will not release the wait when the response is received.
+    #     Instead, the wait must manually be released by calling done_processing_msg_response(). This is useful for
+    #     messages that require multiple responses, or for messages that require real processing where you don't want
+    #     the next messages to be sent until the processing is complete.
+
+    #     Parameters
+    #     ----------
+    #         msg (_type_): Message to send
+    #         pause_sending_until (_type_): Response to wait for before sending the next message
+    #         timeout (int, optional): The time (in seconds) this communicator will wait for a response.
+    #             If a response is not received by then (based on the pause_sending_until), the message will be resent.
+    #             Defaults to 1.
+    #         max_retries (int, optional): How many times the message will be resent if the response is not
+    #             received by the timeout. -1 means unlimited retries. Defaults to 0.
+    #         log_msg (_type_, optional): Optional version of the message that will be used in logs.
+    #             Typically used with binary messages so the longs can contain human readable versions.
+    #             Defaults to None which means the actual msg will be used in the logs.
+    #     """
+    #     self.done_waiting.clear()
+
+    #     retries = 0
+
+    #     while max_retries == -1 or retries <= max_retries:
+    #         try:
+    #             self.log.info("queue send, retries left %s", retries)
+    #             await asyncio.wait_for(self.send_and_wait_for_response(msg, pause_sending_until,
+    #                                                                    log_msg), timeout=timeout)
+    #             break
+    #         except asyncio.TimeoutError:
+    #             self.log.error("Timeout waiting for response to %s. Retrying...", msg)
+    #             retries += 1
+
+    #     await self.done_waiting.wait()
+
+    async def send_and_wait_for_response_processed(
+        self,
+        msg,
+        pause_sending_until,
+        timeout: float = 2.0,
+        max_retries: int = 1,          # -1 means unlimited
+        log_msg=None,
+        processing_timeout: float | None = None,
+        raise_on_timeout: bool = False,
+    ):
+        """Send a message and wait for ARRIVAL and then PROCESSING completion.
+
+        - 'timeout' caps waiting for the matching response to ARRIVE (parser must set done_waiting).
+        - 'processing_timeout' caps waiting for processing completion (handler must call done_processing_msg_response()).
+        - Returns True on success; False if total timeout; raises if raise_on_timeout=True.
+        """
+        if processing_timeout is None:
+            processing_timeout = timeout
+
+        attempt = 0
+        # attempts_allowed = infinite if max_retries == -1, else (max_retries + 1)
+        while (max_retries == -1) or (attempt < (max_retries + 1)):
+            attempt += 1
             try:
-                await asyncio.wait_for(self.send_and_wait_for_response(msg, pause_sending_until,
-                                                                       log_msg), timeout=timeout)
-                break
-            except asyncio.TimeoutError:
-                self.log.error("Timeout waiting for response to %s. Retrying...", msg)
-                retries += 1
+                self.log.info(
+                    "TX attempt %s/%s: %s (await '%s' arrival, timeout=%.2fs)",
+                    attempt,
+                    "∞" if max_retries == -1 else (max_retries + 1),
+                    (log_msg or msg),
+                    pause_sending_until,
+                    timeout,
+                )
 
-        await self.done_waiting.wait()
+                # Phase 1: ARRIVAL (bounded)
+                await asyncio.wait_for(
+                    self.send_and_wait_for_response(msg, pause_sending_until, log_msg),
+                    timeout=timeout,
+                )
+
+                self.log.info(
+                    "RX matched '%s' for %s; waiting for processing completion (timeout=%.2fs)",
+                    pause_sending_until, (log_msg or msg), processing_timeout
+                )
+
+                # Phase 2: PROCESSING (bounded)
+                # Handler should call done_processing_msg_response(), which must set `no_response_waiting`.
+                await asyncio.wait_for(self.no_response_waiting.wait(), timeout=processing_timeout)
+
+                self.log.info("Processing complete for %s", (log_msg or msg))
+                return True
+
+            except asyncio.TimeoutError:
+                # Open the gate so subsequent attempts (or other sends) aren’t blocked
+                self.no_response_waiting.set()
+
+                if (max_retries == -1) or (attempt < (max_retries + 1)):
+                    self.log.warning(
+                        "Timeout on '%s' for %s; retrying (%s/%s)...",
+                        pause_sending_until, (log_msg or msg),
+                        attempt + 1, "∞" if max_retries == -1 else (max_retries + 1),
+                    )
+                    continue
+
+                # Exhausted
+                self.log.error(
+                    "No '%s' after %s attempt(s) for %s; giving up.",
+                    pause_sending_until, attempt, (log_msg or msg)
+                )
+                if raise_on_timeout:
+                    raise
+                return False
+
+
+    # def done_processing_msg_response(self):
+    #     """Releases the wait for the response to be processed.
+
+    #     This is used in conjunction with send_and_wait_for_response_processed().
+    #     May be called safely if there's no wait to release.
+    #     """
+    #     self.done_waiting.set()
 
     def done_processing_msg_response(self):
-        """Releases the wait for the response to be processed.
+        if not self.no_response_waiting.is_set():
+            self.no_response_waiting.set()   # allow next send
+        if not self.done_waiting.is_set():
+            self.done_waiting.set()          # be safe if arrival wasn’t set
 
-        This is used in conjunction with send_and_wait_for_response_processed().
-        May be called safely if there's no wait to release.
-        """
-        self.done_waiting.set()
 
     def send_with_confirmation(self, msg, pause_sending_until, log_msg=None):
         """Sends a message without blocking (returns immediately).
@@ -325,6 +431,9 @@ class FastSerialCommunicator(LogMixin):
         if log_msg:
             self.send_queue.put_nowait((f'{msg}\r'.encode(), pause_sending_until, log_msg))
         else:
+            ##################
+            self.log.info("send_with_confirmation: %s waiting for %s response", msg, pause_sending_until)
+            ##################
             self.send_queue.put_nowait((f'{msg}\r'.encode(), pause_sending_until, msg))
 
     def send_and_forget(self, msg, log_msg=None):
@@ -339,46 +448,111 @@ class FastSerialCommunicator(LogMixin):
         # Forcing log_msg since bytes are not human readable
         self.send_queue.put_nowait((msg, None, log_msg))
 
-    def parse_incoming_raw_bytes(self, msg):
-        """Parse a bytestring from the serial communicator."""
+    # def parse_incoming_raw_bytes(self, msg):
+    #     """Parse a bytestring from the serial communicator."""
+    #     self.received_msg += msg
+
+    #     while True:
+    #         pos = self.received_msg.find(b'\r')
+
+    #         # no more complete messages
+    #         if pos == -1:
+    #             break
+
+    #         msg = self.received_msg[:pos]
+    #         self.received_msg = self.received_msg[pos + 1:]
+
+    #         if not msg:
+    #             continue
+
+    #         try:
+    #             msg = msg.decode()
+    #         except UnicodeDecodeError:
+
+    #             if self.machine.is_shutting_down:
+    #                 return
+
+    #             self.log.warning("Interference / bad data received: %s", msg)
+    #             if not self.ignore_decode_errors:
+    #                 raise
+
+    #         if self.port_debug:
+    #             self.log.info("<<<< %s", msg)
+
+    #         self._dispatch_incoming_msg(msg)
+
+    def parse_incoming_raw_bytes(self, msg: bytes):
+        """Parse a bytestring from the serial communicator (robust to noise and leading junk)."""
+        # Accumulate until we see CR-delimited frames
         self.received_msg += msg
 
         while True:
             pos = self.received_msg.find(b'\r')
-
-            # no more complete messages
-            if pos == -1:
+            if pos == -1:      # no complete frame yet
                 break
 
-            msg = self.received_msg[:pos]
-            self.received_msg = self.received_msg[pos + 1:]
+            raw = self.received_msg[:pos]
+            self.received_msg = self.received_msg[pos + 1:]  # drop the CR
 
-            if not msg:
+            if not raw:
                 continue
 
+            # --- Safe ASCII decode with noise handling ---
             try:
-                msg = msg.decode()
+                line = raw.decode("ascii")
             except UnicodeDecodeError:
-
-                if self.machine.is_shutting_down:
+                if getattr(self.machine, "is_shutting_down", False):
                     return
+                # Log exact noisy bytes, then salvage ASCII payload
+                self.log.warning("Interference / bad data received: %r", raw)
+                line = raw.decode("ascii", "ignore")
 
-                self.log.warning("Interference / bad data received: %s", msg)
-                if not self.ignore_decode_errors:
-                    raise
+            # Strip non-printable control chars (keep TAB); CR is already removed
+            line = "".join(ch for ch in line if ch == "\t" or 32 <= ord(ch) <= 126)
+            if not line:
+                continue
+
+            # If the header isn't at the beginning, search for the first valid header
+            # (common headers on FAST buses)
+            HEADERS = ("ID:", "ER:", "BR:", "MS:", "XX:")
+            if not (len(line) >= 3 and line[2] == ":" and line[:2].isalpha() and line[:2].isupper()):
+                idxs = [line.find(h) for h in HEADERS]
+                idxs = [i for i in idxs if i != -1]
+                if idxs:
+                    hdr_idx = min(idxs)
+                    if hdr_idx > 0:
+                        self.log.debug("Dropped %d bytes of leading noise before header: %r",
+                                    hdr_idx, line[:hdr_idx])
+                    line = line[hdr_idx:]
+                else:
+                    # No recognizable frame in this line—drop it quietly
+                    self.log.debug("Dropping non-frame line: %r", line)
+                    continue
+
+            # Drop explicitly ignored whole-line messages
+            if line in getattr(self, "IGNORED_MESSAGES", []):
+                continue
 
             if self.port_debug:
-                self.log.info("<<<< %s", msg)
+                self.log.info("<<<< %s", line)
 
-            self._dispatch_incoming_msg(msg)
+            try:
+                self._dispatch_incoming_msg(line)
+            except Exception as e:
+                # Don’t let a bad line kill the reader loop
+                self.log.exception("Error dispatching line %r: %s", line, e)
+
+
 
     def _dispatch_incoming_msg(self, msg):
+
         # Figures out what to do with incoming messages
         if msg in self.IGNORED_MESSAGES:
             return
-
+        self.log.warning(msg)  ### ADDED TO DIAGNOSE EXP BOARD VERIFICATION ###
         msg_header = msg[:3]
         if msg_header in self.message_processors:
+            #self.log.warning(msg_header)  ### ADDED TO DIAGNOSE EXP BOARD VERIFICATION ###
             self.message_processors[msg_header](msg[3:])
             self.no_response_waiting.set()
 
@@ -464,3 +638,17 @@ class FastSerialCommunicator(LogMixin):
             self.writer.write(msg)
         except AttributeError:
             self.log.warning("Serial connection is not open. Cannot send message: %s", msg)
+
+    def _safe_ascii_lines(self, b: bytes):
+        """Return a list of ASCII lines from a raw chunk, dropping non-ASCII noise."""
+        try:
+            s = b.decode("ascii")
+        except UnicodeDecodeError:
+            # Keep the original bytes in logs to debug wiring/noise
+            self.log.warning("Interference / bad data received: %r", b)
+            # Decode what we can and drop the junk
+            s = b.decode("ascii", "ignore")
+        # Keep printable + CR/LF/TAB; strip other control chars
+        s = "".join(ch for ch in s if ch in ("\r", "\n", "\t") or 32 <= ord(ch) <= 126)
+        # Split into individual responses (FAST frames are ASCII, CR/LF delimited)
+        return [line for line in s.replace("\r", "\n").split("\n") if line]

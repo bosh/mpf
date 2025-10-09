@@ -70,12 +70,86 @@ class FastExpansionBoard:
 
             self.create_breakout(brk)
 
-    # pylint: disable-msg=too-many-locals
+    # # pylint: disable-msg=too-many-locals
+    # def create_led_ports(self):
+    #     """Parse the LED port overrides and create port configurations."""
+    #     led_port_configurations = [[], []]  # grouped into breakout 0 and 1
+    #     for led_port in self.config['led_ports']:
+    #         normalized_port_number = int(led_port['port']) - 1
+    #         port_config = {
+    #             'normalized_port': normalized_port_number,
+    #             'led_count': int(led_port['leds'])
+    #         }
+    #         if normalized_port_number < 4:
+    #             led_port_configurations[0].append(port_config)
+    #         else:
+    #             led_port_configurations[1].append(port_config)
+
+    #     breakout_led_group_number = -1
+    #     final_configurations = []
+    #     for port_group_configurations in led_port_configurations:
+    #         breakout_led_group_number += 1
+    #         if len(port_group_configurations) == 0:
+    #             continue  # no need to configure if no overrides are made in the breakout group
+
+    #         total_leds = sum(map(lambda item: item['led_count'], port_group_configurations))
+
+    #         unclaimed_count = 128 - total_leds
+    #         if unclaimed_count < 0:  # each breakout supports 128 lights total
+    #             self.log.error(f"Error configuring FAST EXP {self.address} breakout leds : "
+    #                            f"{total_leds} total assigned but only 128 allowed per block of 4 ports")
+
+    #         addresses = [
+    #             breakout_led_group_number * 4 + 0,
+    #             breakout_led_group_number * 4 + 1,
+    #             breakout_led_group_number * 4 + 2,
+    #             breakout_led_group_number * 4 + 3
+    #         ]
+    #         prepared_sets = []
+    #         attempts = 0
+    #         leds_claimed = 0
+    #         while len(addresses) > 0:
+    #             attempts += 1
+    #             address = addresses.pop(0)
+    #             config_data = next(filter(
+    #                 lambda x, a=address: x['normalized_port'] == a,
+    #                 port_group_configurations), None)
+    #             if config_data:
+    #                 leds_claimed += config_data['led_count']
+    #                 prepared_sets.append(config_data)
+    #             else:
+    #                 if attempts <= 4:
+    #                     addresses.append(address)  # put at end for retry after defined set
+    #                 else:
+    #                     # claim 32 or whatever is left, never less than 0
+    #                     usable_leds = max(min(32, 128 - leds_claimed), 0)
+    #                     leds_claimed += usable_leds
+    #                     prepared_sets.append({'normalized_port': address, 'led_count': usable_leds})
+
+    #         led_offset = 0
+    #         sorted_configs = sorted(prepared_sets, key=lambda x: x['normalized_port'])
+    #         for port_configuration in sorted_configs:
+    #             number = port_configuration['normalized_port'] % 4
+    #             chain_type = '0'
+    #             start = led_offset
+    #             count = port_configuration['led_count']
+    #             led_offset += count
+    #             if start <= 128:  # start at 128 for 0 lights is a possible case
+    #                 hex_start = Util.int_to_hex_string(start)
+    #                 hex_count = Util.int_to_hex_string(count)
+    #                 breakout_address = f'{self.address}{breakout_led_group_number}'
+    #                 message = f'ER@{breakout_address}:{number},{chain_type},{hex_start},{hex_count}'
+    #                 self.log.info(message)
+    #                 self.communicator.send_with_confirmation(message, 'ER:P')
+    #         final_configurations.append(prepared_sets)
+    #     self.led_port_configurations = final_configurations
+
     def create_led_ports(self):
-        """Parse the LED port overrides and create port configurations."""
-        led_port_configurations = [[], []]  # grouped into breakout 0 and 1
+        """Parse LED port overrides and program EXP LED groups (4 ports per group, 128 LEDs max per group)."""
+        # Collect overrides as normalized 0..7 ports: [{'normalized_port': N, 'led_count': C}, ...]
+        led_port_configurations = [[], []]  # two groups of 4 ports each
         for led_port in self.config['led_ports']:
-            normalized_port_number = int(led_port['port']) - 1
+            normalized_port_number = int(led_port['port']) - 1  # YAML is 1-based
             port_config = {
                 'normalized_port': normalized_port_number,
                 'led_count': int(led_port['leds'])
@@ -87,18 +161,24 @@ class FastExpansionBoard:
 
         breakout_led_group_number = -1
         final_configurations = []
+
         for port_group_configurations in led_port_configurations:
             breakout_led_group_number += 1
-            if len(port_group_configurations) == 0:
-                continue  # no need to configure if no overrides are made in the breakout group
 
-            total_leds = sum(map(lambda item: item['led_count'], port_group_configurations))
+            # Skip empty group (no overrides provided for this group)
+            if not port_group_configurations:
+                continue
 
+            # Validate per-group budget (128 LEDs)
+            total_leds = sum(item['led_count'] for item in port_group_configurations)
             unclaimed_count = 128 - total_leds
-            if unclaimed_count < 0:  # each breakout supports 128 lights total
-                self.log.error(f"Error configuring FAST EXP {self.address} breakout leds : "
-                               f"{total_leds} total assigned but only 128 allowed per block of 4 ports")
+            if unclaimed_count < 0:
+                self.log.error(
+                    "Error configuring FAST EXP %s group %s: %s total assigned but only 128 allowed per block of 4 ports",
+                    self.address, breakout_led_group_number, total_leds
+                )
 
+            # Build a complete ordered list for the group's 4 addresses (0..3), inserting overrides and auto-filling gaps
             addresses = [
                 breakout_led_group_number * 4 + 0,
                 breakout_led_group_number * 4 + 1,
@@ -108,41 +188,54 @@ class FastExpansionBoard:
             prepared_sets = []
             attempts = 0
             leds_claimed = 0
-            while len(addresses) > 0:
+
+            while addresses:
                 attempts += 1
                 address = addresses.pop(0)
-                config_data = next(filter(
-                    lambda x, a=address: x['normalized_port'] == a,
-                    port_group_configurations), None)
+                config_data = next((x for x in port_group_configurations if x['normalized_port'] == address), None)
                 if config_data:
                     leds_claimed += config_data['led_count']
                     prepared_sets.append(config_data)
                 else:
                     if attempts <= 4:
-                        addresses.append(address)  # put at end for retry after defined set
+                        # rotate once to let defined ports land first
+                        addresses.append(address)
                     else:
-                        # claim 32 or whatever is left, never less than 0
+                        # auto-claim remaining LEDs up to 32 on this port (never negative)
                         usable_leds = max(min(32, 128 - leds_claimed), 0)
                         leds_claimed += usable_leds
                         prepared_sets.append({'normalized_port': address, 'led_count': usable_leds})
 
+            # Program ports in numeric order; compute running start offset within the 128-LED group
             led_offset = 0
             sorted_configs = sorted(prepared_sets, key=lambda x: x['normalized_port'])
+            self.log.info("[G%d] LEDCFG:G%d overrides=%s total_leds=%d",
+                        breakout_led_group_number, breakout_led_group_number,
+                        port_group_configurations, sum(p['led_count'] for p in port_group_configurations))
+            self.log.info("[G%d] LEDCFG:G%d prepared=%s", breakout_led_group_number, breakout_led_group_number, sorted_configs)
+
             for port_configuration in sorted_configs:
-                number = port_configuration['normalized_port'] % 4
-                chain_type = '0'
+                number = port_configuration['normalized_port'] % 4  # 0..3 inside this group
+                chain_type = '0'  # native FAST chain type for EXP LEDs
                 start = led_offset
                 count = port_configuration['led_count']
                 led_offset += count
-                if start <= 128:  # start at 128 for 0 lights is a possible case
+
+                # Start can be 128 when a port gets 0 LEDs (allowed)
+                if start <= 128:
                     hex_start = Util.int_to_hex_string(start)
                     hex_count = Util.int_to_hex_string(count)
-                    breakout_address = f'{self.address}{breakout_led_group_number}'
-                    message = f'ER@{breakout_address}:{number},{chain_type},{hex_start},{hex_count}'
-                    self.log.info(message)
-                    self.communicator.send_with_confirmation(message, 'ER:P')
-            final_configurations.append(prepared_sets)
+                    breakout_address = f'{self.address}{breakout_led_group_number}'  # e.g. '84' + '1' => '841'
+                    msg = f'ER@{breakout_address}:{number},{chain_type},{hex_start},{hex_count}'
+                    self.log.info("[G%d] ER msg='%s' exists=%s",
+                                breakout_led_group_number, msg, True)
+                    # Send and wait for ER:P ACK so programming is deterministic
+                    self.communicator.send_with_confirmation(msg, 'ER:P')
+
+            final_configurations.append(sorted_configs)
+
         self.led_port_configurations = final_configurations
+
 
     def create_breakout(self, config: dict) -> None:
         """Define a breakout board within an EXP board."""
