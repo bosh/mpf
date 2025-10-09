@@ -556,6 +556,7 @@ class FastSerialCommunicator(LogMixin):
                 self.log.exception("Error dispatching line %r: %s", line, e)
 
 
+
     def _dispatch_incoming_msg(self, msg):
 
         # Figures out what to do with incoming messages
