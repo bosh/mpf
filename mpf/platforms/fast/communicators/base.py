@@ -483,41 +483,47 @@ class FastSerialCommunicator(LogMixin):
 
     def parse_incoming_raw_bytes(self, msg: bytes):
         """Parse a bytestring from the serial communicator (robust to noise and leading junk)."""
-        # Accumulate until we see CR-delimited frames
         self.received_msg += msg
+
+        # Build a dynamic set of known headers from registered processors.
+        # Many FAST headers are 3 chars (including colon), e.g. 'ID:', 'SA:', '/L:', '-L:'
+        # Also include a small default set for early boot before processors are registered.
+        default_headers = ('ID:', 'ER:', 'BR:', 'MS:', 'XX:', 'SA:', 'SD:', 'SL:', 'SC:', '/L:', '-L:')
+        known_headers = tuple(self.message_processors.keys()) or default_headers
 
         while True:
             pos = self.received_msg.find(b'\r')
-            if pos == -1:      # no complete frame yet
+            if pos == -1:
                 break
 
             raw = self.received_msg[:pos]
-            self.received_msg = self.received_msg[pos + 1:]  # drop the CR
+            self.received_msg = self.received_msg[pos + 1:]
 
             if not raw:
                 continue
 
-            # --- Safe ASCII decode with noise handling ---
+            # Safe decode; keep going on junk
             try:
                 line = raw.decode("ascii")
             except UnicodeDecodeError:
                 if getattr(self.machine, "is_shutting_down", False):
                     return
-                # Log exact noisy bytes, then salvage ASCII payload
                 self.log.warning("Interference / bad data received: %r", raw)
                 line = raw.decode("ascii", "ignore")
 
-            # Strip non-printable control chars (keep TAB); CR is already removed
+            # Strip control chars (keep TAB); CR already removed
             line = "".join(ch for ch in line if ch == "\t" or 32 <= ord(ch) <= 126)
             if not line:
                 continue
 
-            # If the header isn't at the beginning, search for the first valid header
-            # (common headers on FAST buses)
-            HEADERS = ("ID:", "ER:", "BR:", "MS:", "XX:")
-            if not (len(line) >= 3 and line[2] == ":" and line[:2].isalpha() and line[:2].isupper()):
-                idxs = [line.find(h) for h in HEADERS]
-                idxs = [i for i in idxs if i != -1]
+            # Fast path: header already at start? (2–3 visible chars + colon)
+            if not (len(line) >= 3 and line[2] == ":" and line[:2].isprintable()):
+                # Not a clean header at pos 0; try to find the first known header inside the line
+                idxs = []
+                for h in known_headers:
+                    i = line.find(h)
+                    if i != -1:
+                        idxs.append(i)
                 if idxs:
                     hdr_idx = min(idxs)
                     if hdr_idx > 0:
@@ -525,11 +531,18 @@ class FastSerialCommunicator(LogMixin):
                                     hdr_idx, line[:hdr_idx])
                     line = line[hdr_idx:]
                 else:
-                    # No recognizable frame in this line—drop it quietly
-                    self.log.debug("Dropping non-frame line: %r", line)
-                    continue
+                    # As a last resort, accept any 1–3 printable chars followed by colon as a header
+                    m = re.search(r'([ -~]{1,3}):', line)
+                    if m:
+                        if m.start() > 0:
+                            self.log.debug("Heuristic header recovery; dropped noise: %r", line[:m.start()])
+                        line = line[m.start():]
+                    else:
+                        # No recognizable frame—drop quietly
+                        self.log.debug("Dropping non-frame line: %r", line)
+                        continue
 
-            # Drop explicitly ignored whole-line messages
+            # Ignore fully if configured
             if line in getattr(self, "IGNORED_MESSAGES", []):
                 continue
 
@@ -539,9 +552,8 @@ class FastSerialCommunicator(LogMixin):
             try:
                 self._dispatch_incoming_msg(line)
             except Exception as e:
-                # Don’t let a bad line kill the reader loop
+                # Never let a bad frame crash the reader loop
                 self.log.exception("Error dispatching line %r: %s", line, e)
-
 
 
     def _dispatch_incoming_msg(self, msg):
