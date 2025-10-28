@@ -10,7 +10,7 @@ class Carousel(Mode):
 
     __slots__ = ["_all_items", "_items", "_select_item_events", "_next_item_events",
                  "_previous_item_events", "_highlighted_item_index", "_done", "_automatically_complete",
-                 "_block_events", "_release_events", "_is_blocking", "_wrap_items"]
+                 "_block_events", "_release_events", "_reset_events", "_is_blocking", "_wrap_items"]
 
     def __init__(self, *args, **kwargs):
         """Initialize carousel mode."""
@@ -22,6 +22,7 @@ class Carousel(Mode):
         self._highlighted_item_index = None
         self._block_events = None
         self._release_events = None
+        self._reset_events = None
         self._is_blocking = None
         self._wrap_items = None
         self._done = None
@@ -43,6 +44,7 @@ class Carousel(Mode):
         self._highlighted_item_index = 0
         self._block_events = Util.string_to_event_list(mode_settings.get("block_events", ""))
         self._release_events = Util.string_to_event_list(mode_settings.get("release_events", ""))
+        self._reset_events = Util.string_to_event_list(mode_settings.get("reset_events", ""))
         self._wrap_items = mode_settings.get("wrap_items", True)
         self._automatically_complete = mode_settings.get("automatically_complete", True)
 
@@ -75,6 +77,7 @@ class Carousel(Mode):
         self._register_handlers(self._next_item_events, self._next_item)
         self._register_handlers(self._previous_item_events, self._previous_item)
         self._register_handlers(self._select_item_events, self._select_item)
+        self._register_handlers(self._reset_events, self._reset)
 
         self._highlighted_item_index = 0
         self._update_highlighted_item(None)
@@ -140,6 +143,12 @@ class Carousel(Mode):
             self._highlighted_item_index = len(self._get_available_items()) - 1
 
         self._update_highlighted_item("backwards")
+
+    def _reset(self, **kwargs):
+        del kwargs
+        self._highlighted_item_index = 0
+        self._update_highlighted_item(None)
+        self._done = False
 
     def _select_item(self, **kwargs):
         del kwargs
