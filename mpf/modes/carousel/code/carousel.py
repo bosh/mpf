@@ -9,7 +9,7 @@ class Carousel(Mode):
     """Mode which allows the player to select another mode to run."""
 
     __slots__ = ["_all_items", "_items", "_select_item_events", "_next_item_events",
-                 "_previous_item_events", "_highlighted_item_index", "_done",
+                 "_previous_item_events", "_highlighted_item_index", "_done", "_automatically_complete",
                  "_block_events", "_release_events", "_is_blocking", "_wrap_items"]
 
     def __init__(self, *args, **kwargs):
@@ -25,6 +25,7 @@ class Carousel(Mode):
         self._is_blocking = None
         self._wrap_items = None
         self._done = None
+        self._automatically_complete = None
         super().__init__(*args, **kwargs)
 
     def mode_init(self):
@@ -43,6 +44,7 @@ class Carousel(Mode):
         self._block_events = Util.string_to_event_list(mode_settings.get("block_events", ""))
         self._release_events = Util.string_to_event_list(mode_settings.get("release_events", ""))
         self._wrap_items = mode_settings.get("wrap_items", True)
+        self._automatically_complete = mode_settings.get("automatically_complete", True)
 
         if not self._all_items:
             raise AssertionError("Specify at least one item to select from")
@@ -144,7 +146,8 @@ class Carousel(Mode):
         if self._done:
             return
         self.debug_log("Selected mode: " + str(self._get_highlighted_item()))
-        self._done = True
+        if self._automatically_complete:
+            self._done = True
 
         self.machine.events.post("carousel_item_selected", carousel=self.name, item=self._get_highlighted_item())
         '''event carousel_item_selected
