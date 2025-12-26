@@ -13,6 +13,7 @@ class Randomizer:
         self.force_all = False
         self.disable_random = False
         self.items = list()
+        self._random = random.Random()
 
         # self.loop - property which sets force_all=True if loop==False
         self._loop = True
@@ -177,8 +178,7 @@ class Randomizer:
         # Add additional template_type support here, as needed
         return value
 
-    @staticmethod
-    def pick_weighted_random(items):
+    def pick_weighted_random(self, items):
         """Pick a random item.
 
         Args:
@@ -186,7 +186,7 @@ class Randomizer:
             items: Items to select from
         """
         total_weights = sum([x[1] for x in items])
-        value = random.randint(1, total_weights)
+        value = self._random.randint(1, total_weights)
         index_value = 0
 
         for item in items:
