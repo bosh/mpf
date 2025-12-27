@@ -4,16 +4,36 @@ import random
 
 class Randomizer:
 
+    """Generates randomness with a managed seed"""
+
+    def __init__(self, name=None, machine=None, seed=None):
+        """Initialize Randomizer."""
+        self.name = name
+        self.machine = machine
+        self.set_seed(seed)
+
+    def set_seed(self, seed):
+        self.seed = seed or random.random()
+        self._random = random.Random(seed)
+        self.machine and self.machine.log.info(f"Randomizer {self.name} seeded with seed: {seed}")
+
+    def random(self, range):
+        """Returns number between 0 and Range-1"""
+        return self._random.randrange(range)
+
+class ListRandomizer(Randomizer):
+
     """Generic list randomizer."""
 
-    def __init__(self, items, machine=None, template_type='event'):
-        """Initialize Randomizer."""
+    def __init__(self, items, name=None, machine=None, template_type='event', seed=None):
+        """Initialize ListRandomizer."""
+        super().__init__(name=name, machine=machine, seed=seed)
+
         self.fallback_value = None
         self.force_different = True
         self.force_all = False
         self.disable_random = False
         self.items = list()
-        self._random = random.Random()
 
         # self.loop - property which sets force_all=True if loop==False
         self._loop = True
@@ -42,7 +62,7 @@ class Randomizer:
                 self.items.append((this_item, int(this_weight)))
                 self.items.sort(key=lambda x: x[0].name or x[0])
         else:
-            raise AssertionError("Invalid input for Randomizer")
+            raise AssertionError("Invalid input for ListRandomizer")
 
         self.data = dict()
         self._init_data(self.data)
