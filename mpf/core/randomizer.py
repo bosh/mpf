@@ -10,10 +10,10 @@ class Randomizer:
         """Initialize Randomizer."""
         self.name = name
         self.machine = machine
-        self.set_seed(seed)
+        self.set_seed(seed or machine and machine.randomizers['root'].random(10000))
 
     def set_seed(self, seed):
-        self.seed = seed or random.random()
+        self.seed = seed
         self._random = random.Random(seed)
         self.machine and self.machine.log.info(f"Randomizer {self.name} seeded with seed: {seed}")
 
