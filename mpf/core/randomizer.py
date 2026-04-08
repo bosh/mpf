@@ -128,7 +128,7 @@ class Randomizer:
                 found_it = True
                 break
 
-        if not found_it:
+        if not found_it and self.fallback_value:
             self.data['current_item'] = self.fallback_value
             self.data['current_item_index'] = 0
             return self.fallback_value

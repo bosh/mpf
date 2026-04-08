@@ -233,6 +233,22 @@ class TestRandomizer(MpfTestCase):
         self.assertEqual(0, results.count('2'))
         self.assertEqual(10, results.count('foo'))
 
+        # last item is used when all conditional items are false and no fallback is given
+        r = Randomizer([
+                '1{False}',
+                '2{False}',
+                '3{False}',
+            ], self.machine)
+        r.disable_random = True
+
+        results = list()
+        for x in range(10):
+            results.append(next(r))
+
+        self.assertEqual(0, results.count('1'))
+        self.assertEqual(0, results.count('2'))
+        self.assertEqual(10, results.count('3'))
+
     def test_conditionals_dynamic_updating_no_random(self):
         # conditionals should loop properly when conditional values change between draws
         r = Randomizer([
