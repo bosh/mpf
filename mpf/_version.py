@@ -10,7 +10,7 @@ PyPI.
 
 """
 
-__version__ = '0.80.0.dev14'
+__version__ = '0.80.0'
 '''The full version of MPF.'''
 
 __short_version__ = '0.80'
@@ -19,7 +19,7 @@ __short_version__ = '0.80'
 __bcp_version__ = '1.1'
 '''The version of BCP this build of MPF uses.'''
 
-__gmc_version__ = '0.1.6'
+__gmc_version__ = '1.0.0'
 '''The version of GMC this build of MPF requires.'''
 
 __config_version__ = '6'
