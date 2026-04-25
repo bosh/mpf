@@ -5,6 +5,7 @@ Note that in the Mission Pinball Framework, a distinction is made between a
 *machine* is the physical pinball machine.
 """
 from functools import partial
+import time
 import asyncio
 
 from mpf.core.events import QueuedEvent
@@ -106,8 +107,12 @@ class Game(AsyncMode):
     async def _run_ball(self, is_extra_ball=False):
         self._end_ball_event.clear()
         await self._start_ball(is_extra_ball)
-        # Wait for end ball event to be set
-        await self._end_ball_event.wait()
+
+        while not self._end_ball_event.is_set():
+            print(f"[{time.time()}] Waiting for end ball...")
+            # yield control, but resume immediately next loop
+            await asyncio.sleep(0)
+
         await self._end_ball()
 
     async def _start_game(self):
