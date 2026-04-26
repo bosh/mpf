@@ -145,7 +145,7 @@ class MachineController(LogMixin):
         self.mpf_config = config                        # type: MpfConfig
         self.config_validator = ConfigValidator(self, self.mpf_config.get_config_spec())
 
-        self.randomizers = dict() # type: Dict[str, Randomizer]
+        self.randomizers = dict()  # type: Dict[str, Randomizer]
         self.variables = MachineVariables(self)  # type: MachineVariables
 
         # add some type hints
@@ -443,8 +443,8 @@ class MachineController(LogMixin):
         sys.path.insert(0, self.machine_path)
 
     def _initialize_randomizers(self) -> None:
-        """Register the root randomizer"""
-        machine_seed = random.random()
+        """Register the root randomizer."""
+        machine_seed = random.random()  # NOSONAR
         self.randomizers['root'] = Randomizer(machine=self, name='root', seed=machine_seed)
 
     def verify_system_info(self):

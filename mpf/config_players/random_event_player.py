@@ -41,7 +41,6 @@ class RandomEventPlayer(ConfigPlayer):
 
     def find_or_create_randomizer(self, settings, context, calling_context):
         """Uses context and calling context to find a randomizer instance or create and register a new one."""
-
         '''player_var: random_(x).(y)
 
         desc: Holds references to ListRandomizer settings that need to be

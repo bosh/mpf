@@ -4,7 +4,7 @@ import random
 
 class Randomizer:
 
-    """Generates randomness with a managed seed"""
+    """Generates randomness with a managed seed."""
 
     def __init__(self, name=None, machine=None, seed=None):
         """Initialize Randomizer."""
@@ -13,18 +13,22 @@ class Randomizer:
         self.set_seed(seed or machine and machine.randomizers['root'].random(10000))
 
     def set_seed(self, seed):
+        """Reset the random generator to the start of the specified seed."""
         self.seed = seed
         self._random = random.Random(seed)
-        self.machine and self.machine.log.info(f"Randomizer {self.name} seeded with seed: {seed}")
+        if self.machine:
+            self.machine.log.info(f"Randomizer {self.name} seeded with seed: {seed}")
 
-    def random(self, range):
-        """Returns number between 0 and Range-1"""
-        return self._random.randrange(range)
+    def random(self, range_value):
+        """Returns number between 0 and Range-1."""
+        return self._random.randrange(range_value)
+
 
 class ListRandomizer(Randomizer):
 
     """Generic list randomizer."""
 
+    # pylint: disable-msg=too-many-arguments
     def __init__(self, items, name=None, machine=None, template_type='event', seed=None):
         """Initialize ListRandomizer."""
         super().__init__(name=name, machine=machine, seed=seed)
