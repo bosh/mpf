@@ -1581,23 +1581,20 @@ sound_player:
     __valid_in__: machine, mode, show
     __type__: config_player
     block: single|bool|false
-    action: single|enum(play,replace,stop,stop_looping,load,unload)|play
+    action: single|enum(play,replace,stop,loop_stop)|play
     delay: single|secs|None
     bus: single|str|None
     volume: single|gain|None
     ducking: single|subconfig(sound_ducking)|None
-    pan: single|float_or_token|None
     loops: single|int_or_token|None
     priority: single|int_or_token|None
     start_at: single|template_secs|None
     fade_in: single|secs|None
     fade_out: single|secs|None
-    about_to_finish_time: single|secs|-1
     max_queue_time: single|secs|-1
     events_when_played: list|event_posted|None
     events_when_stopped: list|event_posted|None
     events_when_looping: list|event_posted|None
-    events_when_about_to_finish: list|event_posted|None
     key: single|str|None
 sound_pools:
     __valid_in__: machine, mode                      # todo add to validator
