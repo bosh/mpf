@@ -132,3 +132,42 @@ class TestVPX(MpfTestCase):
         self.advance_time_and_run(.1)
         self.read_vpx_response_from_bcp()
         self.assertSwitchState("s_test", False)
+
+    def test_vpx_reset_clears_switches_and_resets_machine(self):
+        """vpx_reset wipes platform switch mirror, drives machine.reset(),
+        and replies with result=ok."""
+        self.advance_time_and_run()
+        self.client.send_queue = asyncio.Queue()
+
+        platform = self.machine.hardware_platforms['virtual_pinball']
+
+        # Pre-condition: set two switches active via the platform handler the
+        # plugin uses (so switch_controller stays consistent).
+        platform.vpx_set_switch("0", True)   # s_sling
+        platform.vpx_set_switch("3", True)   # s_flipper
+        self.advance_time_and_run(.1)
+        self.assertTrue(platform._switches["0"].state)
+        self.assertTrue(platform._switches["3"].state)
+        self.assertSwitchState("s_sling", True)
+
+        # Track that machine_reset_phase_3 fires (proxy for machine.reset() running).
+        reset_fired = []
+        self.machine.events.add_handler(
+            "machine_reset_phase_3", lambda **kwargs: reset_fired.append(True))
+
+        # Action.
+        self._encode_and_send("reset")
+        self.advance_time_and_run(.5)
+
+        # Reply check: result=ok, no error.
+        result = self.read_vpx_response_from_bcp()
+        self.assertIsNotNone(result)
+
+        # Switch mirror cleared.
+        self.assertFalse(platform._switches["0"].state)
+        self.assertFalse(platform._switches["3"].state)
+        self.assertSwitchState("s_sling", False)
+        self.assertSwitchState("s_flipper", False)
+
+        # machine.reset() ran.
+        self.assertTrue(reset_fired, "machine_reset_phase_3 was not posted")
