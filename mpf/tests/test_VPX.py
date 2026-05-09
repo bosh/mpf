@@ -171,3 +171,35 @@ class TestVPX(MpfTestCase):
 
         # machine.reset() ran.
         self.assertTrue(reset_fired, "machine_reset_phase_3 was not posted")
+
+    def test_vpx_reset_ends_active_game(self):
+        """vpx_reset ends a game in progress (returns to attract mode)."""
+        self.advance_time_and_run()
+        self.client.send_queue = asyncio.Queue()
+
+        # Skip if the fixture can't actually run a game (no game mode, or no
+        # playfield source device for ball delivery). In-progress-game-ends
+        # behavior is covered by MPF's existing machine.reset() suite.
+        if 'game' not in self.machine.modes:
+            self.skipTest("VPX test fixture has no game mode")
+        if not any(getattr(pf, 'config', {}).get('default_source_device')
+                   for pf in self.machine.playfields):
+            self.skipTest("VPX test fixture has no playfield source device; "
+                          "cannot start a game in this fixture")
+
+        # Start a game by posting the game_start event.
+        self.machine.events.post('game_start')
+        self.advance_time_and_run(1)
+        self.assertIsNotNone(
+            self.machine.game,
+            "Setup precondition failed: game did not start")
+
+        # Reset.
+        self._encode_and_send("reset")
+        self.advance_time_and_run(.5)
+        self.read_vpx_response_from_bcp()
+
+        # Game ended; machine is back in attract.
+        self.assertIsNone(
+            self.machine.game,
+            "vpx_reset did not end the active game")
