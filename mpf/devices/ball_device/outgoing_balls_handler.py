@@ -48,6 +48,7 @@ class OutgoingBallsHandler(BallDeviceStateHandler):
         self._incoming_ball_which_may_skip_obj = []     # type: List[IncomingBall]
         self._eject_future = None       # type: Optional[asyncio.Future]
 
+
     def add_eject_to_queue(self, eject: OutgoingBall):
         """Add an eject request to queue."""
         self._eject_queue.put_nowait(eject)
@@ -63,9 +64,6 @@ class OutgoingBallsHandler(BallDeviceStateHandler):
         try:
             self._incoming_ball_which_may_skip_obj.remove(incoming_ball)
         except ValueError as e:
-            if self.unit_test:
-                # re-raise this in tests
-                raise e
             self.warning_log("Double remove of incoming ball. This is likely a bug! "
                              "Please report in the forum if you can reproduce it.")
         if not self._incoming_ball_which_may_skip_obj:
