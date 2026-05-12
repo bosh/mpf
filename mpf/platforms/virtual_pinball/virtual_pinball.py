@@ -1,5 +1,6 @@
 """VPX platform."""
 import asyncio
+import inspect
 from typing import Dict, List, Optional
 
 import logging
@@ -200,6 +201,8 @@ class VirtualPinballPlatform(LightsPlatform, SwitchPlatform, DriverPlatform, Seg
 
         try:
             result = method(**kwargs)
+            if inspect.iscoroutine(result):
+                result = await result
         # pylint: disable-msg=broad-except
         except Exception as e:
             self.machine.bcp.transport.send_to_client(client, "vpcom_bridge_response",
@@ -210,6 +213,24 @@ class VirtualPinballPlatform(LightsPlatform, SwitchPlatform, DriverPlatform, Seg
     def vpx_start(self):
         """Start machine."""
         self._started.set()
+        return True
+
+    async def vpx_reset(self):
+        """Wipe platform-side switch mirror and reset the machine.
+
+        Called by the VPX plugin on every (re)connect to give VPX a clean
+        MPF to talk to. Mechanisms (servos, motors, drop targets, diverters)
+        auto-reset because they subscribe to machine_reset_phase_3.
+
+        Order matters: clear switches first so reset-phase handlers see the
+        cleaned state instead of stale readings from the prior VPX session.
+        """
+        for num, sw in list(self._switches.items()):
+            if sw.state:
+                sw.state = False
+                self.machine.switch_controller.process_switch_by_num(
+                    state=0, num=num, platform=self)
+        await self.machine.reset()
         return True
 
     def vpx_get_switch(self, number):
