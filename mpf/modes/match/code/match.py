@@ -18,10 +18,11 @@ class Match(AsyncMode):
         """Initialize match mode."""
         super().__init__(*args, **kwargs)
         # add setting
-        self.machine.settings.add_setting(SettingEntry("match_percentage", "Match Percentage", 500,
-                                                       "match_percentage", 10,
-                                                       {0: "Never", 2: "2%", 5: "5%", 10: "10%", 15: "15%", 30: "30%",
-                                                        50: "50%"}, "standard"))
+        self.machine.settings.add_setting(
+            SettingEntry("match_percentage",
+                         "Match Percentage", 500, "match_percentage", 10,
+                         {0: "Never", 2: "2%", 5: "5%", 10: "10%", 15: "15%", 30: "30%", 50: "50%"},
+                         "standard"))
 
     def _get_match_numbers(self):
         """Calculate match numbers."""
@@ -66,7 +67,12 @@ class Match(AsyncMode):
         self.machine.variables.set_machine_var('match_number', winner_number)
 
         for i in range(0, self.machine.game.max_players):
-            event_args["match_number{}".format(i)] = match_numbers[i] if len(match_numbers) > i else ""
+            player_value = ""
+            if len(match_numbers) > i:
+                player_value = match_numbers[i]
+
+            event_args["match_number{}".format(i)] = player_value
+            event_args["match_number{}_won".format(i)] = player_value == winner_number
 
         if not winners:
             # no winner
@@ -80,7 +86,9 @@ class Match(AsyncMode):
               winners: Number of winners (always 0 here)
               match_number0: Match number for player 0
               match_number1: Match number for player 1
+              match_number1_won: True/False for if player 1 matched
               match_numberX: Match number for player X (up to max players)
+              match_numberX_won: T/F for if player X matched (up to max players)
             '''
         else:
             # we got a winner
@@ -94,6 +102,8 @@ class Match(AsyncMode):
               winners: Number of winners (always more than 0 here)
               match_number0: Match number for player 0
               match_number1: Match number for player 1
+              match_number1_won: True/False for if player 1 matched
               match_numberX: Match number for player X (up to max players)
+              match_numberX_won: T/F for if player X matched (up to max players)
             '''
         # that is it. credits mode should hook into the match_has_match event and award credits
