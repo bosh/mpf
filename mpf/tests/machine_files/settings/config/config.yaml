@@ -19,3 +19,30 @@ settings:
             zero: "Zero"
             one: "One"
             two: "Two"
+    custom_setting_float:
+        label: "Float Setting"
+        key_type: float
+        default: 0.1
+        sort: 3
+        values:
+            0: "Zero"
+            0.1: "Point One"
+            1.0: "One"
+            2.5: "Two Point Five"
+    custom_setting_bool_t:
+        label: "Boolean Setting Default True"
+        key_type: bool
+        default: true
+        sort: 4
+        values:
+            true: "yes"
+            false: "off"
+
+    custom_setting_bool_f:
+        label: "Boolean Setting Default False"
+        key_type: bool
+        default: false
+        sort: 5
+        values:
+            true: "on"
+            false: "no"

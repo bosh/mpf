@@ -24,3 +24,19 @@ class TestSettings(MpfTestCase):
         self.assertEqual("one", self.machine.settings.custom_setting_str)
         self.machine.settings.set_setting_value("custom_setting_str", "zero")
         self.assertEqual("zero", self.machine.settings.custom_setting_str)
+
+        self.assertEqual(0.1, self.machine.settings.custom_setting_float)
+        self.machine.settings.set_setting_value("custom_setting_float", 2.5)
+        self.assertEqual(2.5, self.machine.settings.custom_setting_float)
+        self.machine.settings.set_setting_value("custom_setting_float", 0)
+        self.assertEqual(0, self.machine.settings.custom_setting_float)
+
+        self.assertEqual(True, self.machine.settings.custom_setting_bool_t)
+        self.machine.settings.set_setting_value("custom_setting_bool_t", False)
+        self.assertEqual(False, self.machine.settings.custom_setting_bool_t)
+        self.machine.settings.set_setting_value("custom_setting_bool_t", True)
+        self.assertEqual(True, self.machine.settings.custom_setting_bool_t)
+
+        self.assertEqual(False, self.machine.settings.custom_setting_bool_f)
+        self.machine.settings.set_setting_value("custom_setting_bool_f", True)
+        self.assertEqual(True, self.machine.settings.custom_setting_bool_f)

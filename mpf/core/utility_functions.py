@@ -57,6 +57,8 @@ class Util:
             return float(value)
         if type_name == "str":
             return str(value)
+        if type_name == "bool":
+            return str(value).lower() in ['true', 't', 'yes', 'enable', 'on', '1']
 
         raise AssertionError("Unknown type {}".format(type_name))
 
