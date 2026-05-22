@@ -31,15 +31,19 @@ class EventReferenceParser:
                 class_label = None
                 config_section = None
                 for statement in x.body:
-                    if isinstance(statement, ast.Assign) and len(statement.targets) == 1 and \
-                       isinstance(statement.targets[0], ast.Name) and isinstance(statement.value, ast.Str):
+                    if (isinstance(statement, ast.Assign)
+                            and len(statement.targets) == 1
+                            and isinstance(statement.targets[0], ast.Name)
+                            and isinstance(statement.value, ast.Constant)
+                            and isinstance(statement.value.value, str)):
                         if statement.targets[0].id == "class_label":
-                            class_label = str(statement.value.s)
+                            class_label = str(statement.value.value)
                         elif statement.targets[0].id == "config_section":
-                            config_section = [str(statement.value.s)]
+                            config_section = [str(statement.value.value)]
 
                 for y in ast.walk(x):
-                    if not (isinstance(y, ast.Str) and (y.s.strip().lower().startswith('event:'))):
+                    if not (isinstance(y, ast.Constant) and isinstance(y.value, str)
+                            and y.value.strip().lower().startswith('event:')):
                         continue
 
                     event_dict = self._parse_string(y)
@@ -60,7 +64,7 @@ class EventReferenceParser:
 
     def _parse_string(self, string):
         string = '\n'.join(' '.join(line.split())
-                           for line in string.s.split('\n'))
+                           for line in string.value.split('\n'))
 
         string = string.replace('Event:', 'event:')
         string = string.replace('Desc:', 'desc:')
