@@ -303,6 +303,20 @@ class TestShots(MpfTestCase):
         # second timeout from interleaved sequence. can we prevent this?
         self.assertEventCalled("sequence1_timeout", times=2)
 
+    def test_sequence_with_timeout_reset_on_advance(self):
+        """Reset on advance resets timer on each step."""
+        self.mock_event("sequence_with_timeout_reset_on_advance_hit")
+        self.mock_event("sequence_with_timeout_reset_on_advance_timeout")
+        self.post_event("event_10")
+        self.advance_time_and_run(.9)
+        self.post_event("event_11")
+        self.advance_time_and_run(.9)
+        self.post_event("event_12")
+        self.advance_time_and_run(.1)
+        self.assertEventCalled("sequence_with_timeout_reset_on_advance_hit", times=1)
+        self.advance_time_and_run(2)
+        self.assertEventNotCalled("sequence_with_timeout_reset_on_advance_timeout")
+
     def test_mode_seqence(self):
         """"Test sequence in mode."""
         self.mock_event("sequence_mode_event_hit")
