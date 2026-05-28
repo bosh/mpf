@@ -15,3 +15,10 @@ class TestCustomCode(MpfTestCase):
         self.machine_run()
 
         self.assertEqual(1, self._events['test_response'])
+
+    def test_scoring_2(self):
+        self.mock_event("test_response_2")
+        self.post_event("test_event_2")
+        self.machine_run()
+
+        self.assertEqual(1, self._events['test_response_2'])
