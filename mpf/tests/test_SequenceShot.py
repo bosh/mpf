@@ -218,6 +218,28 @@ class TestShots(MpfTestCase):
         self.hit_and_release_switch("switch_5")
         self.assertEventCalled("sequence_with_dupes_and_cancel2_hit", 1)
 
+    def test_sequence_events_with_duplicates_and_cancel(self):
+        self.mock_event("sequence_events_with_dupes_and_cancel_hit")
+        self.post_event("event_6")
+        self.machine_run()
+        self.post_event("event_6")
+        self.machine_run()
+        self.post_event("event_7")
+        self.machine_run()
+        self.post_event("event_7")
+        self.assertEventCalled("sequence_events_with_dupes_and_cancel_hit", 0)
+        self.post_event("event_6")
+        self.machine_run()
+        self.post_event("event_7")
+        self.machine_run()
+        self.post_event("event_6")
+        self.machine_run()
+        self.post_event("event_7")
+        self.machine_run()
+        self.assertEventCalled("sequence_events_with_dupes_and_cancel_hit", 1)
+        self.post_event("event_7")
+        self.assertEventCalled("sequence_events_with_dupes_and_cancel_hit", 1)
+
     def test_interleaved_sequences(self):
         """"Two balls pass through the sequence."""
         self.mock_event("sequence1_hit")
