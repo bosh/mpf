@@ -5,13 +5,60 @@ from mpf.core.utility_functions import Util
 class TestUtil(unittest.TestCase):
 
     def test_string_to_ms(self):
-        self.assertEqual(86400000, Util.string_to_ms('1d'))
-        self.assertEqual(3600000, Util.string_to_ms('1h'))
-        self.assertEqual(60000, Util.string_to_ms('1m'))
-        self.assertEqual(1000, Util.string_to_ms('1s'))
-        self.assertEqual(1, Util.string_to_ms('1ms'))
-        self.assertEqual(0, Util.string_to_ms(None))
-        self.assertEqual(0, Util.string_to_ms(False))
+        # Base Units
+        self.assertEqual(Util.string_to_ms('1d'), 86400000)
+        self.assertEqual(Util.string_to_ms('1h'), 3600000)
+        self.assertEqual(Util.string_to_ms('1m'), 60000)
+        self.assertEqual(Util.string_to_ms('1s'), 1000)
+        self.assertEqual(Util.string_to_ms('1ms'), 1)
+
+        # Quirky Units
+        self.assertEqual(Util.string_to_ms('200msec'), 200)
+        self.assertEqual(Util.string_to_ms('200Msec'), 200)
+        self.assertEqual(Util.string_to_ms('2sec'), 2000)
+        self.assertEqual(Util.string_to_ms('2Sec'), 2000)
+        self.assertEqual(Util.string_to_ms('1.5S'), 1500)
+        self.assertEqual(Util.string_to_ms('100.0ms'), 100)
+
+        # Unitless int/floats as strings
+        self.assertEqual(Util.string_to_ms('200'), 200)
+        self.assertEqual(Util.string_to_ms('100.0'), 100)
+
+        # Actual int/float
+        self.assertEqual(Util.string_to_ms(500), 500)
+        self.assertEqual(Util.string_to_ms(1.5), 1)
+
+        # Strings implying zero
+        self.assertEqual(Util.string_to_ms('None'), 0)
+        self.assertEqual(Util.string_to_ms('NONE'), 0)
+
+        # T/F/N native behavior
+        self.assertEqual(Util.string_to_ms(True), 1)
+        self.assertEqual(Util.string_to_ms(False), 0)
+        self.assertEqual(Util.string_to_ms(None), 0)
+
+        # Whitespace handling
+        self.assertEqual(Util.string_to_ms('  500ms  '), 500)
+        self.assertEqual(Util.string_to_ms('2s '), 2000)
+
+    def test_string_to_ms_unhandled(self):
+        with self.assertRaises(ValueError):
+            Util.string_to_ms('')
+
+        with self.assertRaises(ValueError):
+            Util.string_to_ms('no')
+
+        with self.assertRaises(ValueError):
+            Util.string_to_ms('pinball')
+
+        with self.assertRaises(ValueError):
+            Util.string_to_ms('True')
+
+        with self.assertRaises(ValueError):
+            Util.string_to_ms('200mss')
+
+        with self.assertRaises(ValueError):
+            Util.string_to_ms('2s 1s')
 
     def test_keys_to_lower(self):
         inner_dict = dict(key1=1, Key2=2)
