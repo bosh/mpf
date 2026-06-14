@@ -40,7 +40,11 @@ class FASTRGBLED:
             channel = self.channels[index]
             if channel:
                 brightness, _, done = channel.get_fade_and_brightness(current_time)
-                result += f'{int(brightness * 255):02X}'
+                # Clamp to a single byte: an out-of-range brightness here would
+                # format to a 1- or 3-char hex channel and crash the downstream
+                # binascii unpacking with an "Odd-length string" error.
+                clamped_brightness = min(255, max(0, int(brightness * 255)))
+                result += f'{clamped_brightness:02X}'
                 if not done:
                     self.dirty = True
             else:
@@ -116,6 +120,12 @@ class FASTLEDChannel(LightPlatformInterface):
             fade_ms = max_fade_ms
             ratio = ((current_time + (fade_ms / 1000.0) - start_time) /
                      (target_time - start_time))
+            # A fade's start_time and the current_time passed in come from
+            # separate clock reads, so current_time can land a hair before
+            # start_time, making this ratio slightly out of [0, 1]. That would
+            # push brightness below 0 (fade up) or above 1 (fade down); clamp
+            # the ratio so the interpolation stays in range for both directions.
+            ratio = max(0.0, min(1.0, ratio))
             brightness = start_brightness + (target_brightness - start_brightness) * ratio
             done = False
         else:
@@ -125,15 +135,15 @@ class FASTLEDChannel(LightPlatformInterface):
             self._last_brightness = brightness
             done = True
 
-        # There is a bug that can sometimes cause the start_time to be ahead of the current_time,
-        # resulting in a negative brightness value. This may be a floating-point rounding error,
-        # or maybe something else. I can't figure it out, so just floor the value to be non-negative.
-        if brightness < 0:
-            brightness = 0
-            self.led.log.warning("Calculated a negative brightness (%s) for led %s channel %s. current_time: %s "
+        # Final guard in case start/target brightness themselves are ever out
+        # of [0, 1]: an out-of-range value would crash the hex formatter in
+        # current_color, so clamp both ends.
+        if brightness < 0 or brightness > 1:
+            self.led.log.warning("Calculated an out-of-range brightness (%s) for led %s channel %s. current_time: %s "
                                  "start_brightness: %s, start_time: %s, target_brightness: %s, target_time: %s",
                                  brightness, self.led, self.channel, current_time, start_brightness, start_time,
                                  target_brightness, target_time)
+            brightness = max(0.0, min(1.0, brightness))
 
         return brightness, fade_ms, done
 
