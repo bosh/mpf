@@ -834,7 +834,7 @@ neoseg_displays:
     number_template: single|str|None
     start_x: single|float|None
     start_y: single|float|None
-    size: single|enum(2digit,8digit)|8digit
+    size: single|enum(2digit,8digit,2digit-rg-swapped,8digit-rg-swapped)|8digit
     light_template: single|subconfig(lights,device)|
 lights:
     __valid_in__: machine
