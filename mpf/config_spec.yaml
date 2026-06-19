@@ -544,7 +544,7 @@ fast:
     __type__: config
     net: single|subconfig(fast_net)|None
     exp: single|subconfig(fast_exp)|None
-    exp_int: single|subconfig(fast_exp)|None    
+    exp_int: single|subconfig(fast_exp)|None
     aud: single|subconfig(fast_aud)|None
     seg: single|subconfig(fast_seg)|None
     dmd: single|subconfig(fast_dmd)|None
