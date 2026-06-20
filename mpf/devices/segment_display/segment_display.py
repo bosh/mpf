@@ -277,14 +277,18 @@ class SegmentDisplay(SystemWideDevice):
                 self._current_placeholder = None
 
     def _expand_colors(self, colors, length):
-        """Expand color to a certain length."""
+        """Expand color to a certain length safely without destroying custom inputs."""
         if not colors:
             colors = self._default_color
         else:
-            if (len(colors)) == 1:
+            if len(colors) == 1:
                 colors = colors * length
-            elif len(colors) != length:
-                colors = [RGBColor("white")] * length
+            elif len(colors) < length:
+                # Pad out missing slots using the last specified color
+                colors = colors + [colors[-1]] * (length - len(colors))
+            elif len(colors) > length:
+                # Safe truncation if the provided color array is too long
+                colors = colors[:length]
 
         return colors
 
