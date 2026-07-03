@@ -50,3 +50,15 @@ neoseg_displays:
     light_template:
       type: w
       subtype: led
+  neoSeg_2:
+    start_channel: 0-1-0
+    size: 8digit-rg-swapped
+    light_template:
+      type: w
+      subtype: led
+  neoSeg_3:
+    start_channel: 0-1-120
+    size: 2digit-rg-swapped
+    light_template:
+      type: w
+      subtype: led
