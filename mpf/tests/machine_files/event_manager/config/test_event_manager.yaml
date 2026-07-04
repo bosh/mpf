@@ -7,6 +7,7 @@ event_player:
     test_event_player_delayed:
         - test_event_player2|2s
         - test_event_player3:2s
+    "{current_player.score>=999999999}": never_happens
 
 random_event_player:
     test_random_event_player1:

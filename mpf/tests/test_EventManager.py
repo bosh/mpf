@@ -912,3 +912,23 @@ class TestEventManager(MpfFakeGameTestCase, MpfTestCase):
         # invalid space
         with self.assertRaises(ValueError):
             self.machine.events.add_handler("event_name {machine.variables.test}", self._handler)
+
+    def test_handler_cleanup_on_variable_change(self):
+        self.start_game()
+
+        # This method forces the framework into its broken subscription loop
+        # It needs a callback function to trigger when the condition changes
+        def dummy_callback(*args, **_kwargs):
+            pass
+
+        # Setup a condition-only subscription or segment display update
+        initial_count = len(self.machine.events.registered_handlers['player_turn_ended'])
+
+        # Simulate high frequency score churn
+        for i in range(100):
+            self.machine.game.player.score += 100
+            self.advance_time_and_run(0.01)
+
+        # Assert that the handler count has not ballooned
+        final_count = len(self.machine.events.registered_handlers['player_turn_ended'])
+        self.assertEqual(initial_count, final_count)
