@@ -458,6 +458,8 @@ class EventManager(MpfController):
                                                              _future=future,
                                                              _keys=keys,
                                                              event=event_name)))
+
+        future.add_done_callback(lambda f: [self.remove_handler_by_key(k) for k in keys])
         return future
 
     def _wait_handler(self, _future: asyncio.Future, _keys: List[EventHandlerKey], **kwargs):
