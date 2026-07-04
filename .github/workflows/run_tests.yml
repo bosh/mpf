@@ -4,11 +4,17 @@ on:
   push:
     branches:
       - dev
+      - 0.57.x
+      - 0.58.x
       - 0.80.x
+      - 0.81.x
   pull_request:
     branches:
       - dev
+      - 0.57.x
+      - 0.58.x
       - 0.80.x
+      - 0.81.x
 
 jobs:
   tests:
@@ -100,7 +106,7 @@ jobs:
 
       - name: Upload coverage data to coveralls.io
         if: matrix.os != 'windows-latest'
-        run: coveralls --service=github
+        run: coveralls --service=github-actions
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COVERALLS_FLAG_NAME: ${{ matrix.python-version }}-${{ matrix.os }}
@@ -115,6 +121,6 @@ jobs:
     - name: Finished
       run: |
         pip3 install --upgrade coveralls
-        coveralls --service=github --finish
+        coveralls --service=github-actions --finish
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
