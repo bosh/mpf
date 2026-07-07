@@ -67,7 +67,7 @@ lights:
 #   tracks:
 #     sfx: []
 #   enabled: true
-# 
+#
 # keyboard:
 #     right:
 #         switch: s_service_enter

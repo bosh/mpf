@@ -47,8 +47,8 @@ In order to build the developer documentation, you will also need:
 * ``sphinxcontrib.napoleon``
 * ``gitpython``
 
-Building the developer documentation requires a symbolic link from ``mpf\docs\examples`` to a checkout of the ``mpf-examples`` repository. 
-This is normally automatically created when the documentation is built, but under Windows 10 and higher, symlinks can only be created by 
-administrators, so the process will fail. If you would prefer not to run the build as an administrator, you can create the link manually 
+Building the developer documentation requires a symbolic link from ``mpf\docs\examples`` to a checkout of the ``mpf-examples`` repository.
+This is normally automatically created when the documentation is built, but under Windows 10 and higher, symlinks can only be created by
+administrators, so the process will fail. If you would prefer not to run the build as an administrator, you can create the link manually
 by running ``mklink /d examples <examples directory>`` at the command line from inside the ``docs`` directory.
 

@@ -593,10 +593,13 @@ class FastHardwarePlatform(ServoPlatform, LightsPlatform, RgbDmdPlatform,
             return FASTMatrixLight(number, self.serial_connections['net'], self.machine,
                                    int(1 / self.config['net']['lamp_hz'] * 1000), self)
         if not subtype or subtype == "led":
-            # make everything lowercase and strip trailing channel number
-            parts, channel = number.lower().rsplit('-', 1)
-            # split into board name, breakout, port, led
-            parts = parts.split('-')
+            try:
+                # make everything lowercase and strip trailing channel number
+                parts, channel = number.lower().rsplit('-', 1)
+                # split into board name, breakout, port, led
+                parts = parts.split('-')
+            except ValueError as e:
+                raise ValueError(f"Unable to parse FAST light '{config.name}' address {number}") from e
 
             if parts[0] in self.exp_boards_by_name:  # this is an expansion board LED in config file format
                 return self._add_exp_led_with_config_format(parts, channel, config.name)
