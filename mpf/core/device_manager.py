@@ -172,7 +172,20 @@ class DeviceManager(MpfController):
             for device_name in config:
                 futures.append(collection[device_name].device_added_system_wide())
 
-        await asyncio.wait([asyncio.create_task(futures) for futures in futures])
+        fs = [asyncio.create_task(future) for future in futures]
+        done, pending = await asyncio.wait(fs, return_when=asyncio.FIRST_EXCEPTION)
+
+        # Check if any of the futures returned an exception and throw it
+        for task in done:
+            if task.cancelled():
+                continue
+
+            exc = task.exception()
+            if exc is not None:
+                for pending_task in pending:
+                    pending_task.cancel()
+                await asyncio.gather(*pending, return_exceptions=True)
+                raise exc
 
     # pylint: disable-msg=too-many-nested-blocks
     def get_device_control_events(self, config) -> Generator[Tuple[str, Callable, int, "Device"], None, None]:

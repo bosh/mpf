@@ -45,11 +45,19 @@ class TestMatchMode(MpfFakeGameTestCase):
 
         with patch("mpf.modes.match.code.match.random.randint") as randint:
             randint.return_value = 50
-            self.drain_all_balls()
-            self.advance_time_and_run()
+
+            with patch("mpf.modes.match.code.match.random.choice") as choice:
+                choice.return_value = 10
+
+                self.drain_all_balls()
+                self.advance_time_and_run()
+
         self.assertGameIsNotRunning()
-        self.assertEventCalled("match_no_match")
         self.assertEventNotCalled("match_has_match")
+        queue_cheat = self._last_event_kwargs["match_no_match"]['queue']  # workaround to skip checking event kwarg
+        self.assertEventCalledWith("match_no_match", winner_number=10, winners=0, queue=queue_cheat,
+            match_number0=37, match_number1='', match_number2='', match_number3='',
+            match_number0_won=False, match_number1_won=False, match_number2_won=False, match_number3_won=False)
 
         self.assertMachineVarEqual(0, "credits_whole_num")
 
@@ -71,6 +79,10 @@ class TestMatchMode(MpfFakeGameTestCase):
             self.advance_time_and_run()
         self.assertGameIsNotRunning()
         self.assertEventNotCalled("match_no_match")
-        self.assertEventCalled("match_has_match")
+
+        queue_cheat = self._last_event_kwargs["match_has_match"]['queue']  # workaround to skip checking event kwarg
+        self.assertEventCalledWith("match_has_match", winner_number=37, winners=1, queue=queue_cheat,
+            match_number0=37, match_number1='', match_number2='', match_number3='',
+            match_number0_won=True, match_number1_won=False, match_number2_won=False, match_number3_won=False)
 
         self.assertMachineVarEqual(1, "credits_whole_num")

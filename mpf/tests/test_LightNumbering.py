@@ -14,8 +14,7 @@ class TestLightNumbering(MpfTestCase):
         led1 = self.machine.lights["first"]
         led2 = self.machine.lights["second"]
         led3 = self.machine.lights["third"]
-        led4 = self.machine.lights["fourth"]       
-
+        led4 = self.machine.lights["fourth"]
 
         self.assertEqual(led1.hw_drivers["green"][0].number,"led-0-0-0")
         self.assertEqual(led1.hw_drivers["red"][0].number,"led-0-0-0+1")

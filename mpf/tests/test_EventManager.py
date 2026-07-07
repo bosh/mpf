@@ -912,3 +912,48 @@ class TestEventManager(MpfFakeGameTestCase, MpfTestCase):
         # invalid space
         with self.assertRaises(ValueError):
             self.machine.events.add_handler("event_name {machine.variables.test}", self._handler)
+
+    def test_handler_cleanup_on_variable_change(self):
+        self.start_game()
+        self.machine.events.post('game_mode_start')
+        self.advance_time_and_run(0.01)
+
+        initial_count_pte = len(self.machine.events.registered_handlers['player_turn_ended'])
+        initial_count_player_added = len(self.machine.events.registered_handlers['player_added'])
+
+        for i in range(100):
+            self.machine.game.player.score += 100
+            self.advance_time_and_run(0.01)
+
+        final_count_pte = len(self.machine.events.registered_handlers['player_turn_ended'])
+        final_count_player_added = len(self.machine.events.registered_handlers['player_added'])
+        self.assertEqual(initial_count_pte, final_count_pte)
+        self.assertEqual(initial_count_player_added, final_count_player_added)
+
+    def test_handler_cleanup_on_machine_variable_change(self):
+        self.start_game()
+        self.advance_time_and_run(0.01)
+
+        event_name = 'machine_var_lifetime_earnings'
+        initial_count = len(self.machine.events.registered_handlers.get(event_name, []))
+
+        for i in range(100):
+            self.machine.variables.set_machine_var('lifetime_earnings', 10 + i)
+            self.advance_time_and_run(0.01)
+
+        final_count = len(self.machine.events.registered_handlers.get(event_name, []))
+        self.assertEqual(initial_count, final_count)
+
+    def test_handler_cleanup_on_switch_state_change(self):
+        self.start_game()
+        self.advance_time_and_run(0.01)
+
+        event_name = 'switch_s_test_1_active'
+        initial_count = len(self.machine.events.registered_handlers.get(event_name, []))
+
+        for _ in range(50):
+            self.hit_switch_and_run('s_test_1', 0.01)
+            self.release_switch_and_run('s_test_1', 0.01)
+
+        final_count = len(self.machine.events.registered_handlers.get(event_name, []))
+        self.assertEqual(initial_count, final_count)

@@ -224,13 +224,14 @@ class EventManager(MpfController):
                                      'handler you passed?'.format(handler, event))
 
             sig = inspect.signature(handler)
-            if 'kwargs' not in sig.parameters:
-                raise AssertionError("Handler {} for event '{}' is missing **kwargs. Actual signature: {}".format(
-                    handler, event, sig))
-
-            if sig.parameters['kwargs'].kind != inspect.Parameter.VAR_KEYWORD:
-                raise AssertionError("Handler {} for event '{}' param kwargs is missing '**'. "
+            catchall_name = next((name for name in ('kwargs', '_kwargs') if name in sig.parameters), None)
+            if catchall_name is None:
+                raise AssertionError("Handler {} for event '{}' is missing **kwargs. "
                                      "Actual signature: {}".format(handler, event, sig))
+
+            if sig.parameters[catchall_name].kind != inspect.Parameter.VAR_KEYWORD:
+                raise AssertionError("Handler {} for event '{}' param {} is missing '**'. "
+                                     "Actual signature: {}".format(handler, event, catchall_name, sig))
 
         event, condition, additional_priority = self.get_event_and_condition_from_string(event)
         priority += additional_priority
@@ -457,6 +458,8 @@ class EventManager(MpfController):
                                                              _future=future,
                                                              _keys=keys,
                                                              event=event_name)))
+
+        future.add_done_callback(lambda f: [self.remove_handler_by_key(k) for k in keys])
         return future
 
     def _wait_handler(self, _future: asyncio.Future, _keys: List[EventHandlerKey], **kwargs):
