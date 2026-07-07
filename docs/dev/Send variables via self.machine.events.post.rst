@@ -6,7 +6,7 @@ http://developer.missionpinball.org/en/dev/api/self.machine.events.html?highligh
 
 The best example here is to use the communication between MPF and MPF MC.
 MPF MC can pretty much only read variables from ``self.player`` from MPF (``self.mc.player`` in MC),  however you simply don't want
-to create extra variables in here just to make it readable readable in MC. This would result in having to much unnecessary data. 
+to create extra variables in here just to make it readable readable in MC. This would result in having to much unnecessary data.
 Instead you can use ``self.machine.events.post`` just like you would write a function in python.
 
 For example we set this up in a mode code in MPF:
@@ -21,7 +21,7 @@ It should always start with the ``event`` that you want to post. After this you 
 In MC code we create a function that will be activated once the event is posted. Make sure you have added a event_handler first or else it won't work.
 
 .. code-block:: python
-    
+
   def awesome_event(self, data1, data2, **kwargs):
     print("i really love the game {} I always end up {}".format(data1, data2)
 

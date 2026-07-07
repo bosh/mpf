@@ -7,6 +7,12 @@ event_player:
     test_event_player_delayed:
         - test_event_player2|2s
         - test_event_player3:2s
+    "{machine.lifetime_earnings >= 500}": never_happens_machine
+    "{machine.switches.s_test_1.state == 1}": sometimes_happens_switch
+
+switches:
+    s_test_1:
+        number:
 
 random_event_player:
     test_random_event_player1:

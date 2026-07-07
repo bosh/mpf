@@ -53,7 +53,7 @@ void setup() {
   matrix.begin();
 
   matrix.setBrightness(defaultBrightness);
-  
+
   // clear screen
   backgroundLayer.fillScreen(defaultBackgroundColor);
   backgroundLayer.swapBuffers();
@@ -67,7 +67,7 @@ void loop() {
   char* buffer = (char*)backgroundLayer.backBuffer();
   int bytesAvail = Serial.available();
   boolean swap = false;
-  
+
   if ((bytesAvail > 1) && (dataPos > 0))
   {
     if (bytesAvail > dataExpected) bytesAvail = dataExpected;

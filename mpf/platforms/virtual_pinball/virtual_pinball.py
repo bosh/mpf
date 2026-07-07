@@ -160,7 +160,7 @@ class VirtualPinballPlatform(LightsPlatform, SwitchPlatform, DriverPlatform, Seg
 
     """VPX platform."""
 
-    __slots__ = ["_lights", "_switches", "_drivers", "_last_drivers", "_last_lights", 
+    __slots__ = ["_lights", "_switches", "_drivers", "_last_drivers", "_last_lights",
                  "_started", "rules", "_configured_segment_displays", "_last_segment_text"]
 
     def __init__(self, machine):
