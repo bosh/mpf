@@ -4,7 +4,7 @@ import string
 import asyncio
 import operator as op
 import abc
-from functools import lru_cache
+from functools import lru_cache, partial
 
 import re
 from typing import Tuple, List, Any, Union
@@ -860,7 +860,27 @@ class BasePlaceholderManager(MpfController):
             subscriptions.append(self.machine.wait_for_stop())
             future = Util.any(subscriptions)
         future = asyncio.ensure_future(future)
+
+        future.add_done_callback(
+            partial(self._cleanup_placeholder_subscriptions, subscriptions=subscriptions)
+        )
         return value, future
+
+    def _cleanup_placeholder_subscriptions(self, future, subscriptions):
+        """Cancel child placeholder subscriptions when the parent template frame finishes."""
+        del future
+
+        for sub in subscriptions:
+            if isinstance(sub, asyncio.Future):
+                if not sub.done():
+                    # Cancel outstanding asyncio Future/Task instance
+                    sub.cancel()
+            elif asyncio.iscoroutine(sub):
+                try:
+                    # close raw coroutines (like sleep)
+                    sub.close()
+                except RuntimeWarning:
+                    pass
 
     @lru_cache(typed=True)
     def parse_conditional_template(self, template, default_number=None):
