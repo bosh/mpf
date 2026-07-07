@@ -622,7 +622,7 @@ fast:
     __type__: config
     net: single|subconfig(fast_net)|None
     exp: single|subconfig(fast_exp)|None
-    exp_int: single|subconfig(fast_exp)|None    
+    exp_int: single|subconfig(fast_exp)|None
     aud: single|subconfig(fast_aud)|None
     seg: single|subconfig(fast_seg)|None
     dmd: single|subconfig(fast_dmd)|None
@@ -944,7 +944,7 @@ neoseg_displays:
     number_template: single|str|None
     start_x: single|float|None
     start_y: single|float|None
-    size: single|enum(2digit,8digit)|8digit
+    size: single|enum(2digit,8digit,2digit-rg-swapped,8digit-rg-swapped)|8digit
     light_template: single|subconfig(lights,device)|
 lights:
     __valid_in__: machine
@@ -1573,7 +1573,7 @@ settings:
     label: single|str|
     sort: single|int|
     values: dict|str:str|
-    key_type: single|enum(str,float,int)|str
+    key_type: single|enum(str,float,int,bool)|str
     default: single|str|
     machine_var: single|str|None
     settingType: single|str|standard

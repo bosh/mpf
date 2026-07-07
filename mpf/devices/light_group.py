@@ -14,6 +14,21 @@ from mpf.core.system_wide_device import SystemWideDevice
 from mpf.devices.light import Light
 
 
+NEOSEG_8DIGIT_ORDER = [
+    95, 90, 93, 82, 85, 89, 86, 91, 88, 87, 81, 92, 83, 84, 94,
+    104, 76, 79, 96, 99, 103, 100, 77, 102, 101, 75, 78, 97, 98, 80,
+    110, 105, 108, 67, 70, 74, 71, 106, 73, 72, 66, 107, 68, 69, 109,
+    119, 61, 64, 111, 114, 118, 115, 62, 117, 116, 60, 63, 112, 113, 65,
+    5, 0, 3, 52, 55, 59, 56, 1, 58, 57, 51, 2, 53, 54, 4,
+    14, 46, 49, 6, 9, 13, 10, 47, 12, 11, 45, 48, 7, 8, 50,
+    20, 15, 18, 37, 40, 44, 41, 16, 43, 42, 36, 17, 38, 39, 19,
+    29, 31, 34, 21, 24, 28, 25, 32, 27, 26, 30, 33, 22, 23, 35]
+
+NEOSEG_2DIGIT_ORDER = [
+    5, 0, 3, 22, 25, 29, 26, 1, 28, 27, 21, 2, 23, 24, 4,
+    14, 16, 19, 6, 9, 13, 10, 17, 12, 11, 15, 18, 7, 8, 20]
+
+
 class LightGroup(SystemWideDevice):
 
     """An abstract group of lights."""
@@ -92,25 +107,41 @@ class LightGroup(SystemWideDevice):
         for light in self.lights:
             light.color(color, fade_ms, priority, key)
 
+    def _swap_grb_rgb_channel_offsets(self, offsets):
+        """Swap every first and second out of sets of three (GRB->RGB)."""
+        adjustments = {0: 1, 1: -1, 2: 0}
+        return [
+            x + adjustments[x % 3]
+            for x in offsets
+        ]
+
     def _reorder_lights(self):
         if self.config['size'] == '8digit':
             #Magic order for 8 digit NeoSeg displays from CobraPin
-            order = [95, 90, 93, 82, 85, 89, 86, 91, 88, 87, 81, 92, 83, 84, 94,
-                     104, 76, 79, 96, 99, 103, 100, 77, 102, 101, 75, 78, 97, 98, 80,
-                     110, 105, 108, 67, 70, 74, 71, 106, 73, 72, 66, 107, 68, 69, 109,
-                     119, 61, 64, 111, 114, 118, 115, 62, 117, 116, 60, 63, 112, 113, 65,
-                     5, 0, 3, 52, 55, 59, 56, 1, 58, 57, 51, 2, 53, 54, 4,
-                     14, 46, 49, 6, 9, 13, 10, 47, 12, 11, 45, 48, 7, 8, 50,
-                     20, 15, 18, 37, 40, 44, 41, 16, 43, 42, 36, 17, 38, 39, 19,
-                     29, 31, 34, 21, 24, 28, 25, 32, 27, 26, 30, 33, 22, 23, 35]
+            order = NEOSEG_8DIGIT_ORDER
+
         elif self.config['size'] == '2digit':
             #Magic order for 2 digit NeoSeg displays from CobraPin
-            order = [5, 0, 3, 22, 25, 29, 26, 1, 28, 27, 21, 2, 23, 24, 4,
-                     14, 16, 19, 6, 9, 13, 10, 17, 12, 11, 15, 18, 7, 8, 20]
+            order = NEOSEG_2DIGIT_ORDER
+
+        elif self.config['size'] == '8digit-rg-swapped':
+            #Magic order for 8 digit NeoSeg displays from CobraPin when platform numbering uses RGB channel order
+            order = self._swap_grb_rgb_channel_offsets(NEOSEG_8DIGIT_ORDER)
+
+        elif self.config['size'] == '2digit-rg-swapped':
+            #Magic order for 2 digit NeoSeg displays from CobraPin when platform numbering uses RGB channel order
+            order = self._swap_grb_rgb_channel_offsets(NEOSEG_2DIGIT_ORDER)
         else:
             order = range(0, len(self.lights))
 
-        self.lights = [self.lights[i] for i in order]
+        mapped_lights = []
+        try:
+            for i in order:
+                mapped_lights.append(self.lights[i])
+            self.lights = mapped_lights
+        except IndexError:
+            self.error_log("Attempted to use light index %s but source list only had %s items", i, len(self.lights))
+            raise
 
     def wait_for_loaded(self):
         """Return future."""
@@ -180,11 +211,12 @@ class NeoSegDisplay(LightGroup):
     __slots__ = []  # type: List[str]
 
     def _create_lights(self):
-        if self.config['size'] == '8digit':
+        if self.config['size'] in ('8digit', '8digit-rg-swapped'):
             count = 120
-        elif self.config['size'] == '2digit':
+        elif self.config['size'] in ('2digit', '2digit-rg-swapped'):
             count = 30
         else:
+            self.warning_log("NeoSegDisplay %s could not determine number of lights to create.", self.name)
             count = 0
 
         for index in range(self.config['number_start'], self.config['number_start'] + count):

@@ -57,6 +57,8 @@ class Util:
             return float(value)
         if type_name == "str":
             return str(value)
+        if type_name == "bool":
+            return str(value).lower() in ['true', 't', 'yes', 'enable', 'on', '1']
 
         raise AssertionError("Unknown type {}".format(type_name))
 
@@ -586,13 +588,16 @@ class Util:
         if isinstance(time_string, (int, float)):
             return int(time_string)
 
-        time_string = str(time_string).upper()
+        time_string = str(time_string).upper().strip()
 
-        if time_string.endswith('MS') or time_string.endswith('MSEC'):
-            return int(time_string[:-2])
+        if time_string == 'NONE':
+            return 0
+
+        if time_string.endswith('MS'):
+            return int(float(time_string[:-2]))
 
         if time_string.endswith('MSEC'):
-            return int(time_string[:-4])
+            return int(float(time_string[:-4]))
 
         if time_string.endswith('D'):
             return int(float(time_string[:-1]) * 86400 * 1000)
@@ -609,7 +614,7 @@ class Util:
         if time_string.endswith('SEC'):
             return int(float(time_string[:-3]) * 1000)
 
-        return int(time_string)
+        return int(float(time_string))
 
     @staticmethod
     def string_to_secs(time_string: str) -> float:

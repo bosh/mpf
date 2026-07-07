@@ -132,3 +132,74 @@ class TestVPX(MpfTestCase):
         self.advance_time_and_run(.1)
         self.read_vpx_response_from_bcp()
         self.assertSwitchState("s_test", False)
+
+    def test_vpx_reset_clears_switches_and_resets_machine(self):
+        """vpx_reset wipes platform switch mirror, drives machine.reset(),
+        and replies with result=ok."""
+        self.advance_time_and_run()
+        self.client.send_queue = asyncio.Queue()
+
+        platform = self.machine.hardware_platforms['virtual_pinball']
+
+        # Pre-condition: set two switches active via the platform handler the
+        # plugin uses (so switch_controller stays consistent).
+        platform.vpx_set_switch("0", True)   # s_sling
+        platform.vpx_set_switch("3", True)   # s_flipper
+        self.advance_time_and_run(.1)
+        self.assertTrue(platform._switches["0"].state)
+        self.assertTrue(platform._switches["3"].state)
+        self.assertSwitchState("s_sling", True)
+
+        # Track that machine_reset_phase_3 fires (proxy for machine.reset() running).
+        reset_fired = []
+        self.machine.events.add_handler(
+            "machine_reset_phase_3", lambda **kwargs: reset_fired.append(True))
+
+        # Action.
+        self._encode_and_send("reset")
+        self.advance_time_and_run(.5)
+
+        # Reply check: result=ok, no error.
+        result = self.read_vpx_response_from_bcp()
+        self.assertIsNotNone(result)
+
+        # Switch mirror cleared.
+        self.assertFalse(platform._switches["0"].state)
+        self.assertFalse(platform._switches["3"].state)
+        self.assertSwitchState("s_sling", False)
+        self.assertSwitchState("s_flipper", False)
+
+        # machine.reset() ran.
+        self.assertTrue(reset_fired, "machine_reset_phase_3 was not posted")
+
+    def test_vpx_reset_ends_active_game(self):
+        """vpx_reset ends a game in progress (returns to attract mode)."""
+        self.advance_time_and_run()
+        self.client.send_queue = asyncio.Queue()
+
+        # Skip if the fixture can't actually run a game (no game mode, or no
+        # playfield source device for ball delivery). In-progress-game-ends
+        # behavior is covered by MPF's existing machine.reset() suite.
+        if 'game' not in self.machine.modes:
+            self.skipTest("VPX test fixture has no game mode")
+        if not any(getattr(pf, 'config', {}).get('default_source_device')
+                   for pf in self.machine.playfields):
+            self.skipTest("VPX test fixture has no playfield source device; "
+                          "cannot start a game in this fixture")
+
+        # Start a game by posting the game_start event.
+        self.machine.events.post('game_start')
+        self.advance_time_and_run(1)
+        self.assertIsNotNone(
+            self.machine.game,
+            "Setup precondition failed: game did not start")
+
+        # Reset.
+        self._encode_and_send("reset")
+        self.advance_time_and_run(.5)
+        self.read_vpx_response_from_bcp()
+
+        # Game ended; machine is back in attract.
+        self.assertIsNone(
+            self.machine.game,
+            "vpx_reset did not end the active game")

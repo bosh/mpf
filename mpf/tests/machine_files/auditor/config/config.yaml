@@ -6,7 +6,7 @@ game:
 player_vars:
     score:
         initial_value: 0
-    my_var: 
+    my_var:
         initial_value: 0
 
 auditor:
