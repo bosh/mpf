@@ -274,6 +274,7 @@ class FastNetNeuronCommunicator(FastSerialCommunicator):
         if msg == 'P':
             if not self.platform.soft_power_held_time:
                 self.platform.soft_power_held_time = self.machine.clock.get_time()
+                # print(f"heldat {self.platform.soft_power_held_time}")
                 self.info_log('Soft power down press started.')
                 self.machine.events.post('fast_soft_power_switch_active')
 
@@ -285,6 +286,7 @@ class FastNetNeuronCommunicator(FastSerialCommunicator):
                 self.platform.soft_power_held_time = None
                 self.info_log('Soft power down released after %s seconds.', delta_seconds)
                 if delta_seconds * 1000 > self.platform.soft_power_hold_ms:
+                    print(f"sending it {delta_seconds} {self.platform.soft_power_hold_ms}")
                     self.platform.report_soft_power_down_request()
 
     def _process_sa(self, msg):
