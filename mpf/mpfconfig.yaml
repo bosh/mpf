@@ -65,6 +65,7 @@ mpf:
         playfield_transfers: mpf.devices.playfield_transfer.PlayfieldTransfer
         multiballs: mpf.devices.multiball.Multiball
         motors: mpf.devices.motor.Motor
+        dc_motors: mpf.devices.dc_motor.DCMotor
         ball_saves: mpf.devices.ball_save.BallSave
         accelerometers: mpf.devices.accelerometer.Accelerometer
         servos: mpf.devices.servo.Servo
@@ -427,6 +428,7 @@ hardware:
   i2c: default
   shaker_controllers: default
   stepper_controllers: default
+  motor_controllers: default
 
 combo_switches:
   both_flippers:
