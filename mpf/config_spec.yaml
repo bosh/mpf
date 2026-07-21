@@ -311,6 +311,18 @@ coils:
 custom_code:
     __valid_in__: machine
     __type__: list
+dc_motors:
+    __valid_in__: machine
+    __type__: device
+    default_power: single|float|0.0
+    number: single|str|
+    control_events: dict|str:subconfig(dc_motors_pulse_settings)|None
+    platform: single|str|None
+    platform_settings: single|dict|None
+dc_motors_pulse_settings:
+    action: single|enum(pulse,stop)|pulse
+    power: single|float|None
+    duration: single|template_secs|None
 digital_outputs:
     __valid_in__: machine
     __type__: device
@@ -736,6 +748,7 @@ hardware:
     i2c: list|str|default
     stepper_controllers: list|str|default
     shaker_controllers: list|str|default
+    motor_controllers: list|str|default
     hardware_sound_system: list|str|default
 hardware_sound_systems:
     __valid_in__: machine
