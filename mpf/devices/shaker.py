@@ -21,7 +21,7 @@ class Shaker(SystemWideDevice):
     collection = 'shakers'
     class_label = 'shaker'
 
-    __slots__ = ["hw_shaker", "type", "__dict__"]
+    __slots__ = ["hw_shaker", "platform", "type", "__dict__"]
 
     def __init__(self, machine: MachineController, name: str) -> None:
         """Initialize shaker."""
