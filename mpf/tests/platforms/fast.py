@@ -182,6 +182,9 @@ class MockFastExp(MockFastSerial):
             if address == '48':  # Neuron
                 return "ID:EXP FP-EXP-2000 0.11"
 
+            elif address in ["D0", "D1", "D2", "D3"]:  # 51
+                return "ID:EXP FP-EXP-0051  0.48"
+
             elif address in ["B4", "B5", "B6", "B7"]:  # 71
                 return "ID:EXP FP-EXP-0071  0.11"
 
@@ -200,6 +203,9 @@ class MockFastExp(MockFastSerial):
 
             elif address == '482':  # Neuron
                 return "ID:BRK FP-BRK-0116  0.8"
+
+            elif address in ["D00", "D10", "D20", "D30"]:  # 51
+                return "ID:BRK FP-EXP-0051  0.48"
 
             elif address in ["B40", "B50", "B60", "B70"]:  # 71
                 return "ID:BRK FP-EXP-0071  0.11"

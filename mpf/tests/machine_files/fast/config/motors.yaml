@@ -1,0 +1,17 @@
+#config_version=6
+
+hardware:
+    platform: fast
+
+fast:
+  exp:
+    port: com4
+    boards:
+      exp_0051:
+        model: FP-exp-0051
+
+dc_motors:
+  test_fast_motor:
+    number: exp_0051-1
+    platform: fast
+    default_power: 1.0
