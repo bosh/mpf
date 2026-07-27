@@ -36,22 +36,21 @@ class DCMotor(SystemWideDevice):
         self.platform.assert_has_feature("motors")
         self.hw_motor = await self.platform.configure_dc_motor(self.config['number'], self.config['platform_settings'])
         for event, config in self.config['control_events'].items():
-            if config.get('action') == 'stop':
+            action = config.get('action')
+            if action == 'stop':
                 self.machine.events.add_handler(event, self.event_stop)
-                continue
-            if config.get('action') == 'pulse':
+            elif action == 'pulse':
                 self.machine.events.add_handler(event,
                                                 self.event_pulse,
                                                 power=config.get('power'),
                                                 duration=config['duration'].evaluate({}))
-                continue
-            if config.get('action') == 'reverse_pulse':
+            elif action == 'reverse_pulse':
                 self.machine.events.add_handler(event,
                                                 self.event_reverse_pulse,
                                                 power=config.get('power'),
                                                 duration=config['duration'].evaluate({}))
-                continue
-            # TODO: warn or crash on bad action selection?
+            else:
+                self.raise_config_error("Invalid action in dc_motor entry: {}".format(action), 1)
 
     @event_handler(1)
     def event_pulse(self, duration=None, power=None, **kwargs):
