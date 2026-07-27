@@ -21,7 +21,7 @@ class DCMotor(SystemWideDevice):
     collection = 'dc_motors'
     class_label = 'dc_motor'
 
-    __slots__ = ["hw_motor", "platform", "type", "__dict__"]
+    __slots__ = ["hw_motor", "type", "__dict__"]
 
     def __init__(self, machine: MachineController, name: str) -> None:
         """Initialize dc motor."""
@@ -49,6 +49,16 @@ class DCMotor(SystemWideDevice):
                                                 self.event_reverse_pulse,
                                                 power=config.get('power'),
                                                 duration=config['duration'].evaluate({}))
+            elif action == 'pulse_limit':
+                self.machine.events.add_handler(event,
+                                                self.event_pulse_limit,
+                                                power=config.get('power'),
+                                                duration=config['duration'].evaluate({}))
+            elif action == 'reverse_pulse_limit':
+                self.machine.events.add_handler(event,
+                                                self.event_reverse_pulse_limit,
+                                                power=config.get('power'),
+                                                duration=config['duration'].evaluate({}))
             else:
                 self.raise_config_error("Invalid action in dc_motor entry: {}".format(action), 1)
 
@@ -67,6 +77,20 @@ class DCMotor(SystemWideDevice):
         self.hw_motor.pulse(duration, power)
 
     @event_handler(2)
+    def event_pulse_limit(self, duration=None, power=None, **kwargs):
+        """Event handler for triggering a pulse."""
+        del kwargs
+        self.pulse_limit(duration, power)
+
+    def pulse_limit(self, duration=None, power=None):
+        """Pulse the dc motor for the given duration and power level."""
+        if power is None:
+            power = self.config['default_power']
+        if not duration:
+            raise AssertionError("DC Motor pulse_limit called with no duration value")
+        self.hw_motor.pulse_limit(duration, power)
+
+    @event_handler(3)
     def event_reverse_pulse(self, duration=None, power=None, **kwargs):
         """Event handler for triggering a reverse pulse."""
         del kwargs
@@ -77,8 +101,22 @@ class DCMotor(SystemWideDevice):
         if power is None:
             power = self.config['default_power']
         if not duration:
-            raise AssertionError("DC Motor reverse pulse called with no duration value")
+            raise AssertionError("DC Motor reverse_pulse called with no duration value")
         self.hw_motor.reverse_pulse(duration, power)
+
+    @event_handler(4)
+    def event_reverse_pulse_limit(self, duration=None, power=None, **kwargs):
+        """Event handler for triggering a reverse pulse to limit (home)."""
+        del kwargs
+        self.reverse_pulse_limit(duration, power)
+
+    def reverse_pulse_limit(self, duration=None, power=None):
+        """Pulse the dc motor for the given duration and power level in reverse."""
+        if power is None:
+            power = self.config['default_power']
+        if not duration:
+            raise AssertionError("DC Motor reverse_pulse_limit called with no duration value")
+        self.hw_motor.reverse_pulse_limit(duration, power)
 
     @event_handler(5)
     def event_stop(self, **kwargs):

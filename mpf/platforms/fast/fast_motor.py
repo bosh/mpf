@@ -28,7 +28,8 @@ class FastMotor(MotorPlatformInterface):
         base_command = "MF"
         hex_power = Util.float_to_hex(power)
         hex_duration = Util.int_to_hex_string(duration_secs * 1000, True)
-        self.log.debug("Pulsing motor index %s: for %s seconds with power %s", self.motor_index, duration_secs, power)
+        self.log.debug("Pulsing motor index %s: for %s seconds with power %s",
+                       self.motor_index, duration_secs, power)
 
         self._send_command(base_command, [hex_duration, hex_power])
 
@@ -41,7 +42,36 @@ class FastMotor(MotorPlatformInterface):
         base_command = "MR"
         hex_power = Util.float_to_hex(power)
         hex_duration = Util.int_to_hex_string(duration_secs * 1000, True)
-        self.log.debug("Pulsing motor index %s: for %s seconds with power %s in reverse", self.motor_index, duration_secs, power)
+        self.log.debug("Pulsing motor index %s: for %s seconds with power %s in reverse",
+                       self.motor_index, duration_secs, power)
+
+        self._send_command(base_command, [hex_duration, hex_power])
+
+    def pulse_limit(self, duration_secs=None, power=None):
+        """Pulse the motor at the specified power for the specified duration or limit hit."""
+        if not power or not duration_secs:
+            self.log.debug("Motor pulse_limit called with no power or duration, will not move.")
+            return
+
+        base_command = "ML"
+        hex_power = Util.float_to_hex(power)
+        hex_duration = Util.int_to_hex_string(duration_secs * 1000, True)
+        self.log.debug("Pulsing motor index %s: for %s seconds with power %s",
+                       self.motor_index, duration_secs, power)
+
+        self._send_command(base_command, [hex_duration, hex_power])
+
+    def reverse_pulse_limit(self, duration_secs=None, power=None):
+        """Pulse the motor at the specified power for the specified duration or limit hit, in reverse."""
+        if not power or not duration_secs:
+            self.log.debug("Motor reverse_pulse_limit called with no power or duration, will not move.")
+            return
+
+        base_command = "MH"
+        hex_power = Util.float_to_hex(power)
+        hex_duration = Util.int_to_hex_string(duration_secs * 1000, True)
+        self.log.debug("Pulsing motor index %s: for %s seconds with power %s in reverse",
+                       self.motor_index, duration_secs, power)
 
         self._send_command(base_command, [hex_duration, hex_power])
 
