@@ -237,6 +237,8 @@ class Command:
     def sigint_handler(self, signum=None, frame=None):
         """Handle SIGINT."""
         del signum, frame
+        if self.machine:
+            self.machine.error_log("SIGINT received")
         self._sigint_count += 1
         if self._sigint_count > 1:
             self.exit("Received second SIGINT. Will exit ungracefully!")
