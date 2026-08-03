@@ -678,10 +678,15 @@ class MachineController(LogMixin):
             return False
         except RuntimeError as e:
             self._crash_shutdown()
-            # do not show a runtime useless runtime error
             self.error_log("Failed to initialize MPF")
             report_crash(e, "init_runtime_error", self.config)
             return False
+
+        if not init.done():
+            self._crash_shutdown()
+            self.error_log("MPF Initialization was interrupted or aborted before completing.")
+            return False
+
         if init.done() and init.exception():
             self._crash_shutdown()
             try:
