@@ -58,7 +58,7 @@ class FastExpCommunicator(FastSerialCommunicator):
         """Query the EXP bus for connected boards."""
         for board_name, board_config in self.config['boards'].items():
 
-            # FP-eXp-0071-2 -> FP-EXP-0071
+            # normalize model: FP-eXp-0071-2 -> FP-EXP-0071
             board_config['model'] = ('-').join(board_config['model'].split('-')[:3]).upper()
 
             if board_config['address']:  # need to do it this way since valid config will have 'address' = None
@@ -75,6 +75,7 @@ class FastExpCommunicator(FastSerialCommunicator):
             self.platform.register_expansion_board(board_obj)  # registers with the platform
 
             self.active_board = board_address
+            self.info_log("Querying EXP board: '%s' on address: %s", board_name, board_address)
             await self.send_and_wait_for_response_processed(f'ID@{board_address}:', 'ID:')
 
             for breakout_board in board_obj.breakouts.values():
