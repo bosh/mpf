@@ -29,6 +29,19 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: 3.13
+          cache: 'pip'
+          cache-dependency-path: |
+            **/setup.py
+            **/pyproject.toml
+
+      - name: Cache Linters Tool Storage
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache
+          key: ${{ runner.os }}-prospector-${{ hashFiles('**/setup.py', '**/pyproject.toml') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-prospector-${{ hashFiles('**/setup.py', '**/pyproject.toml') }}-
+            ${{ runner.os }}-prospector-
 
       - name: Install MPF
         run: |
