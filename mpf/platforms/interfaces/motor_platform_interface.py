@@ -26,6 +26,16 @@ class MotorPlatformInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
+    def pulse_limit(self, duration_secs, power):
+        """Enable the dc motor at power level for duration or until limit hit."""
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def reverse_pulse_limit(self, duration_secs, power):
+        """Enable the dc motor at power level in reverse for duration or until limit (home) hit."""
+        raise NotImplementedError
+
+    @abc.abstractmethod
     def stop(self):
         """Stop this dc motor.
 

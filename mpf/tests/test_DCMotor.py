@@ -24,9 +24,18 @@ class TestDCMotor(MpfTestCase):
         self.advance_time_and_run(0.1)
         mock_hw.pulse.assert_called_once_with(1.5, 0.75)
 
+        self.machine.events.post('trigger_motor_1_pulse_with_limit_event')
+        self.advance_time_and_run(0.1)
+        mock_hw.pulse_limit.assert_called_once_with(2.5, 0.5)
+
         self.machine.events.post('trigger_motor_1_reverse_pulse_event')
         self.advance_time_and_run(0.1)
-        mock_hw.reverse_pulse.assert_called_once_with(2.5, 0.5)
+        mock_hw.reverse_pulse.assert_called_once_with(3.5, 0.25)
+
+        self.machine.events.post('trigger_motor_1_reverse_with_limit_event')
+        self.advance_time_and_run(0.1)
+        mock_hw.reverse_pulse_limit.assert_called_once_with(4.5, 1)
+
 
     def test_stop_action_cleanup(self):
         motor = self.machine.dc_motors['test_motor_1']
