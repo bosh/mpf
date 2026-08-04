@@ -108,7 +108,7 @@ jobs:
 
       - name: Install MPF
         run: |
-          pip install --upgrade pip setuptools wheel build coveralls
+          pip install --upgrade pip setuptools wheel build coveralls PyYAML
           pip install -e .
 
       - name: Run tests
@@ -127,6 +127,7 @@ jobs:
         run: coveralls --service=github-actions
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_SERVICE_NAME: github-actions
           COVERALLS_FLAG_NAME: ${{ matrix.python-version }}-${{ matrix.os }}
           COVERALLS_PARALLEL: true
 
@@ -134,11 +135,15 @@ jobs:
     name: Indicate completion to coveralls.io
     needs: tests
     runs-on: ubuntu-latest
-    container: python:3-slim
     steps:
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.11'
     - name: Finished
       run: |
         pip3 install --upgrade coveralls
-        coveralls --service=github-actions --finish
+        coveralls --finish
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        COVERALLS_SERVICE_NAME: github-actions
