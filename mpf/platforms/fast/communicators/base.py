@@ -64,10 +64,12 @@ class FastSerialCommunicator(LogMixin):
         else:
             self.watchdog_cmd = None
 
-        # TODO change these to not be hardcoded
-        # TODO do something with the URL endpoint
-        self.configure_logging(logger=f'FAST [{self.remote_processor}]', console_level=config['debug'],
-                               file_level=config['debug'], url_base='https://fastpinball.com/mpf/error')
+        if config['debug']:
+            config['console_log'] = 'full'
+            config['file_log'] = 'full'
+
+        self.configure_logging(logger=f'FAST [{self.remote_processor}]', console_level=config['console_log'],
+                               file_level=config['file_log'], url_base='https://fastpinball.com/mpf/error')
 
     def __repr__(self):
         """Return representation of FAST processor."""
