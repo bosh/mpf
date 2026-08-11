@@ -316,10 +316,10 @@ dc_motors:
     __type__: device
     default_power: single|float|0.0
     number: single|str|
-    control_events: dict|str:subconfig(dc_motors_pulse_settings)|None
+    control_events: dict|str:subconfig(dc_motor_pulse_settings)|None
     platform: single|str|None
     platform_settings: single|dict|None
-dc_motors_pulse_settings:
+dc_motor_pulse_settings:
     action: single|enum(pulse,reverse_pulse,stop)|pulse
     power: single|float|None
     duration: single|template_secs|None
