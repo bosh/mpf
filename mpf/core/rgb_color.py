@@ -192,7 +192,13 @@ class RGBColor:
 
     def __eq__(self, other):
         """Return true if equal."""
-        return RGBColor(other).rgb == self.rgb
+        if isinstance(other, RGBColor):
+            return other.rgb == self.rgb
+
+        try:
+            return RGBColor(other).rgb == self.rgb
+        except (ValueError, TypeError, Exception):
+            return False
 
     def __ne__(self, other):
         """Return true if not equal."""

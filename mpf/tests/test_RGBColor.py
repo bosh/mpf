@@ -148,6 +148,9 @@ class TestRGBColor(unittest.TestCase):
         self.assertNotEqual(black, color)
         self.assertNotEqual(black, "010203")
 
+        self.assertNotEqual(color, "stop")
+        self.assertNotEqual(RGBColor([0, 0, 0]), "stop")
+
         self.assertEqual("(1, 2, 3)", str(color5))
 
     def test_add_sub(self):
