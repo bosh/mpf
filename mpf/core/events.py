@@ -2,6 +2,7 @@
 import inspect
 from collections import deque, namedtuple, defaultdict
 import uuid
+import re
 
 import asyncio
 from functools import partial, lru_cache
@@ -77,6 +78,10 @@ class EventManager(MpfController):
         Returns 2-item tuple- First item is the event name. Second item is the
         condition (A BoolTemplate instance) if it exists, or None if it doesn't.
         """
+
+        # Look for anything inside square brackets and strip it completely out of the string
+        event_string = re.sub(r'\[.*?\]', '', event_string)
+
         placeholder = None
         additional_priority = 0
         if event_string[-1:] == "}":

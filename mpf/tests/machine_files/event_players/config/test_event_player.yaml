@@ -4,7 +4,7 @@ modes:
   - mode1
 
 event_player:
-    play_express_single: event1
+    play_express_single[foo@bar, baz~quux]: event1
     play_express_multiple: event1, event2
     play_single_list:
         - event1
