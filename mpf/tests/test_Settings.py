@@ -40,3 +40,12 @@ class TestSettings(MpfTestCase):
         self.assertEqual(False, self.machine.settings.custom_setting_bool_f)
         self.machine.settings.set_setting_value("custom_setting_bool_f", True)
         self.assertEqual(True, self.machine.settings.custom_setting_bool_f)
+
+    def invalid_default_setting(self):
+        self.assertEqual(99, self.machine.settings.invalid_default_setting_int)
+        self.assertEqual("invalid", self.machine.settings.get_setting_value_label("invalid_default_setting_int"))
+
+        with self.assertRaises(AssertionError):
+            self.machine.settings.set_setting_value("invalid_default_setting_int", 99)
+        with self.assertRaises(AssertionError):
+            self.machine.settings.set_setting_value("invalid_default_setting_int", 0)

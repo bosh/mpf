@@ -46,3 +46,12 @@ settings:
         values:
             true: "on"
             false: "no"
+
+    invalid_default_setting_int:
+        label: "Int Bad Default Setting"
+        key_type: int
+        default: 99
+        sort: 11
+        values:
+            0: "Zero"
+            1: "One"
