@@ -35,18 +35,14 @@ class BallController(MpfController):
         self.num_balls_known = 0
 
         # register for events
-        self.machine.events.add_handler('request_to_start_game',
-                                        self.request_to_start_game)
-        self.machine.events.add_handler('init_phase_2',
-                                        self._initialize)
-        self.machine.events.add_handler('init_phase_4',
-                                        self._init4, priority=100)
+        self.machine.events.add_handler('request_to_start_game', self.request_to_start_game)
+        self.machine.events.add_handler('init_phase_2', self._initialize)
+        self.machine.events.add_handler('init_phase_4', self._init4, priority=100)
+        self.machine.events.add_handler('shutdown', self._stop)
+        self.machine.events.add_handler('force_ball_controller_recount', self._force_ball_controller_recount)
 
-        self.machine.events.add_handler('shutdown',
-                                        self._stop)
-
-        self._add_new_balls_task = None                                         # type: Optional[asyncio.Task]
-        self._captured_balls = asyncio.Queue()      # type: asyncio.Queue
+        self._add_new_balls_task = None         # type: Optional[asyncio.Task]
+        self._captured_balls = asyncio.Queue()  # type: asyncio.Queue
 
     def _init4(self, **kwargs):
         del kwargs
@@ -382,3 +378,126 @@ class BallController(MpfController):
         after the relay will be processed as newly-drained balls.
 
         '''
+
+    def _force_ball_controller_recount(self, **_kwargs) -> None:
+        """Forcefully recount all physical balls in devices, override the
+        internal expectations, flush out pending captures, and trust current reality.
+        """
+        self.warning_log("Forced administrative ball recount triggered. Re-syncing tracking metrics.")
+
+        # 1. Purge the core capture queue to drop any pending ghost hits waiting to process
+        while not self._captured_balls.empty():
+            try:
+                self._captured_balls.get_nowait()
+            except asyncio.QueueEmpty:
+                break
+
+        # 2. Get the actual physical count. Fall back to _count_balls if devices are unstable.
+        try:
+            actual_physical_balls = self._get_total_balls_in_devices()
+        except ValueError:
+            self.warning_log("Ball device counters unstable during forced recount. Falling back to active switch state matrix.")
+            actual_physical_balls = self._count_balls()
+
+        # 3. Synchronize internal device counts with true physical reality
+        for device in self.machine.ball_devices.values():
+            if device.is_playfield():
+                continue
+
+            try:
+                current_device_count = device.ball_count_handler.counter.count_balls_sync()
+            except ValueError:
+                # Fallback: manually tally switches if the tracker hasn't stabilized
+                current_device_count = 0
+                if device.ball_count_handler.counter.config.get('ball_switches'):
+                    for switch in device.ball_count_handler.counter.config['ball_switches']:
+                        if self.machine.switch_controller.is_active(
+                                switch, ms=device.ball_count_handler.counter.config.get('entrance_count_delay', 0)):
+                            current_device_count += 1
+                elif 'trough' in device.tags:
+                    current_device_count = device.balls
+
+            # Safe Concurrency Sync: Update metrics while respecting the BCH async lock state
+            bch = device.ball_count_handler
+            if bch:
+                if not bch._is_counting.locked():
+                    # No active async loops are counting; safe to use the public setter pipeline
+                    bch._set_ball_count(current_device_count)
+                else:
+                    # An eject loop or reorder is processing; write directly to the properties
+                    # to prevent a race condition and let the loop handle it on release
+                    bch._ball_count = current_device_count
+                    device.counted_balls = current_device_count
+                    if current_device_count > 0:
+                        bch._has_balls.set()
+                    else:
+                        bch._has_balls.clear()
+
+                # Poke the loop change stream to re-verify states instantly
+                bch._revalidate.set()
+            else:
+                device.counted_balls = current_device_count
+
+            device.available_balls = current_device_count
+
+            # Clear out any stale pending or queued tracking pipelines
+            if hasattr(device, '_ball_requests') and device._ball_requests:
+                device._ball_requests.clear()
+
+            if hasattr(device, 'incoming_balls_handler') and device.incoming_balls_handler:
+                if hasattr(device.incoming_balls_handler, 'ball_queue'):
+                    try:
+                        device.incoming_balls_handler.ball_queue.clear()
+                    except AttributeError:
+                        pass
+
+            if hasattr(device, 'outgoing_balls_handler') and device.outgoing_balls_handler:
+                if hasattr(device.outgoing_balls_handler, 'ball_queue'):
+                    try:
+                        device.outgoing_balls_handler.ball_queue.clear()
+                    except AttributeError:
+                        pass
+
+            self.warning_log("Forced device %s ball count sync complete. Count set to: %s", device.name, current_device_count)
+
+        # 4. Correct the global ball controller tracking baseline
+        self.num_balls_known = actual_physical_balls
+        self.info_log("Global ball count correction complete. Known balls trusted at: %s", self.num_balls_known)
+
+        # === FIX: Recalculate and override tracking parameters on the playfields ===
+        # Calculate exactly how many balls are sitting in all physical devices combined
+        balls_in_physical_devices = 0
+        for device in self.machine.ball_devices.values():
+            if not device.is_playfield():
+                balls_in_physical_devices += device.balls
+
+        # Any leftover known balls are what's actually active on the playfields
+        balls_on_playfield = max(0, self.num_balls_known - balls_in_physical_devices)
+
+        # Clear the ghost metrics on your playfields so async wait loops can break cleanly
+        for playfield in self.machine.playfields.values():
+            # If you have a single playfield layout, it gets all the remainder.
+            # Otherwise, force them to 0 unless an explicit active switch overrides it.
+            playfield.balls = balls_on_playfield
+            playfield.available_balls = balls_on_playfield
+            self.warning_log("Forced playfield %s sync. Balls: %s, Available: %s",
+                             playfield.name, playfield.balls, playfield.available_balls)
+
+        # 5. Clean up collection handlers if this rescued a stuck collection loop
+        try:
+            self.machine.events.remove_handler(self._collecting_balls_entered_callback)
+        except ValueError:
+            pass
+
+        # 6. Stop active searches safely and push out the impending search timers
+        for playfield in self.machine.playfields.values():
+            if hasattr(playfield, 'ball_search'):
+                if playfield.ball_search.started:
+                    self.info_log("Stopping active ball search on %s via forced recount.", playfield.name)
+                    playfield.ball_search.stop()
+
+                if playfield.ball_search.enabled:
+                    playfield.ball_search.reset_timer()
+
+        # Post completion event so the framework can proceed cleanly
+        self.machine.events.post("ball_recount_complete", total_balls=self.num_balls_known)
