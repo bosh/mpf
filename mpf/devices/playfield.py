@@ -53,40 +53,41 @@ class Playfield(SystemWideDevice):
                 continue
             for target in device.config['eject_targets']:
                 if target.name == self.name:
+                    # TODO Alias event refactor
                     self.machine.events.add_handler(
-                        event='balldevice_' + device.name +
-                        '_ball_eject_success',
+                        event='balldevice_' + device.name + '_ball_eject_success',
                         handler=self._source_device_eject_success)
+                    # TODO Alias event refactor
                     self.machine.events.add_handler(
                         event='balldevice_{}_ball_lost'.format(device.name),
                         handler=self._source_device_ball_lost)
+                    # TODO Alias event refactor
                     self.machine.events.add_handler(
-                        event='balldevice_' + device.name +
-                        '_ball_eject_failed',
+                        event='balldevice_' + device.name + '_ball_eject_failed',
                         handler=self._source_device_eject_failed)
+                    # TODO Alias event refactor
                     self.machine.events.add_handler(
-                        event='balldevice_' + device.name +
-                        '_ejecting_ball',
+                        event='balldevice_' + device.name + '_ejecting_ball',
                         handler=self._source_device_ejecting_ball)
                     break
 
         # Watch for balls removed from the playfield
-        self.machine.events.add_handler('balldevice_captured_from_' + self.name,
-                                        self._ball_removed_handler)
+        # TODO Event alias listener side
+        self.machine.events.add_handler('balldevice_captured_from_' + self.name, self._ball_removed_handler)
 
         # Watch for any switch hit which indicates a ball on the playfield
-        self.machine.events.add_handler('sw_' + self.name + '_active',
-                                        self._playfield_switch_hit)
+        # TODO Event alias listener side
+        self.machine.events.add_handler('sw_' + self.name + '_active', self._playfield_switch_hit)
 
         for device in self.machine.playfield_transfers.values():
             if device.config['eject_target'] == self:
+                # TODO Event alias listener side
                 self.machine.events.add_handler(
-                    event='balldevice_' + device.name +
-                    '_ball_eject_success',
+                    event='balldevice_' + device.name + '_ball_eject_success',
                     handler=self._source_device_eject_success)
+                # TODO Alias event refactor
                 self.machine.events.add_handler(
-                    event='balldevice_' + device.name +
-                    '_ejecting_ball',
+                    event='balldevice_' + device.name + '_ejecting_ball',
                     handler=self._source_device_ejecting_ball)
 
     async def expected_ball_received(self):
@@ -126,25 +127,28 @@ class Playfield(SystemWideDevice):
 
         self._balls = balls
 
-        self.debug_log("New Ball Count: %s. (Prior count: %s)",
-                       self._balls, prior_balls)
+        self.debug_log("New Ball Count: %s. (Prior count: %s)", self._balls, prior_balls)
 
         if ball_change > 0:
-            self.machine.events.post_relay('balldevice_' + self.name +
-                                           '_ball_enter', new_balls=ball_change,
+            # TODO Alias event refactor
+            self.machine.events.post_relay('balldevice_' + self.name + '_ball_enter',
+                                           name=self.name,
+                                           new_balls=ball_change,
                                            unclaimed_balls=ball_change,
                                            device=self)
         # event docstring covered in base class
 
         if ball_change:
+            # TODO Alias event refactor
             self.machine.events.post(self.name + '_ball_count_change',
-                                     balls=balls, change=ball_change)
+                                     name=self.name, balls=balls, change=ball_change)
         '''event: (name)_ball_count_change
 
         desc: The playfield with the name (name) has changed the number
         of balls that are live.
 
         args:
+        name: The playfield name.
         balls: The current number of balls on the playfield.
         change: The change in balls from the last count.
         '''
@@ -263,10 +267,13 @@ class Playfield(SystemWideDevice):
 
     def _mark_playfield_active(self, source=None):
         self.ball_arrived()
-        self.machine.events.post_boolean(self.name + "_active", source=source)
+        # TODO Alias event refactor
+        self.machine.events.post_boolean(self.name + "_active", name=self.name, source=source)
         '''event: (name)_active
         desc: The playfield called (name) is now active, meaning there's
         at least one loose ball on it.
+        args:
+        name: The playfield name.
         '''
 
     def mark_playfield_active_from_device_action(self, device_name=None):
@@ -285,10 +292,13 @@ class Playfield(SystemWideDevice):
 
             if not self.num_balls_requested:
                 self.debug_log("Playfield was activated with no balls expected.")
-                self.machine.events.post('unexpected_ball_on_' + self.name)
+                # TODO Alias event refactor
+                self.machine.events.post('unexpected_ball_on_' + self.name, name=self.name)
                 '''event: unexpected_ball_on_(name)
                 desc: The playfield named (name) just had a switch hit,
                 meaning a ball is on it, but that ball was not expected.
+                args:
+                name: The playfield name.
                 '''
 
         self.ball_search.reset_timer()
@@ -296,7 +306,9 @@ class Playfield(SystemWideDevice):
     def _ball_removed_handler(self, balls, **kwargs):
         del kwargs
         # somebody got a ball from us so we obviously had one
+        # TODO Alias event refactor
         self.machine.events.post('sw_' + self.name + "_active",
+                                 name=self.name,
                                  callback=self._ball_removed_handler2,
                                  balls=balls)
         '''event: sw_(name)_active
@@ -304,6 +316,7 @@ class Playfield(SystemWideDevice):
         was just removed from it.
 
         args:
+        name: The playfield name.
         balls: The number of balls that were just removed from this playfield.
         '''
 

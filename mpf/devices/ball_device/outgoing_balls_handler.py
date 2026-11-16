@@ -287,12 +287,16 @@ class OutgoingBallsHandler(BallDeviceStateHandler):
                 # stop device
                 self.ball_device.set_eject_state("eject_broken")
                 await self._failed_eject(eject_request, eject_try, False)
-                self.machine.events.post("balldevice_{}_broken".format(self.ball_device.name))
+                event_name = "balldevice_{}_broken".format(self.ball_device.name)
+                # TODO Alias event refactor
+                self.machine.events.post(event_name, name=self.ball_device.name)
                 '''event: balldevice_(name)_broken
                 config_section: ball_devices
                 class_label: ball_device
 
                 desc: The ball device called "name" is broken and will no longer operate.
+                args:
+                name: The device name.
                 '''
                 self._task.cancel()
                 return False
@@ -300,8 +304,10 @@ class OutgoingBallsHandler(BallDeviceStateHandler):
             await self._failed_eject(eject_request, eject_try, True)
 
     async def _prepare_eject(self, eject_request: OutgoingBall, eject_try: int):
+        # TODO Alias event refactor
         await self.machine.events.post_queue_async(
             'balldevice_{}_ball_eject_attempt'.format(self.ball_device.name),
+            name=self.ball_device.name,
             balls=1,
             target=eject_request.target,
             source=self.ball_device,
@@ -317,6 +323,7 @@ class OutgoingBallsHandler(BallDeviceStateHandler):
 
         args:
 
+        name: The device name.
         balls: The number of balls that are to be ejected.
         target: The target ball device that will receive these balls.
         source: The source device that will be ejecting the balls.
@@ -325,8 +332,10 @@ class OutgoingBallsHandler(BallDeviceStateHandler):
         '''
 
     async def _failed_eject(self, eject_request: OutgoingBall, eject_try: int, retry: bool):
+        # TODO Alias event refactor
         await self.machine.events.post_async(
             'balldevice_' + self.ball_device.name + '_ball_eject_failed',
+            name=self.ball_device.name,
             target=eject_request.target,
             balls=1,
             retry=retry,
@@ -337,17 +346,18 @@ class OutgoingBallsHandler(BallDeviceStateHandler):
 
         desc: A ball (or balls) has failed to eject from the device (name).
         args:
-            target: The target device that was supposed to receive the ejected
-                balls.
+            name: The device name.
+            target: The target device that was supposed to receive the ejected balls.
             balls: The number of balls that failed to eject.
             retry: Boolean as to whether this eject will be retried.
-            num_attempts: How many attemps have been made to eject this ball
-                (or balls).
+            num_attempts: How many attemps have been made to eject this ball (or balls).
         '''
 
     async def _post_ejecting_event(self, eject_request: OutgoingBall, eject_try: int):
+        # TODO Alias event refactor
         await self.machine.events.post_async(
             'balldevice_{}_ejecting_ball'.format(self.ball_device.name),
+            name=self.ball_device.name,
             balls=1,
             target=eject_request.target,
             source=self.ball_device,
@@ -360,7 +370,7 @@ class OutgoingBallsHandler(BallDeviceStateHandler):
         desc: The ball device called "name" is ejecting a ball right now.
 
         args:
-
+        name: The device name.
         balls: The number of balls that are to be ejected.
         target: The target ball device that will receive these balls.
         source: The source device that will be ejecting the balls.
@@ -559,17 +569,19 @@ class OutgoingBallsHandler(BallDeviceStateHandler):
     async def _handle_eject_success(self, eject_request: OutgoingBall):
         self.info_log("Eject successful")
 
-        await self.machine.events.post_async('balldevice_' + self.ball_device.name + '_ball_eject_success',
+        event_name = 'balldevice_' + self.ball_device.name + '_ball_eject_success'
+        # TODO Alias event refactor
+        await self.machine.events.post_async(event_name,
+                                             name=self.ball_device.name,
                                              balls=1,
                                              target=eject_request.target)
         '''event: balldevice_(name)_ball_eject_success
         config_section: ball_devices
         class_label: ball_device
 
-        desc: One or more balls has successfully ejected from the device
-            (name).
+        desc: One or more balls has successfully ejected from the device (name).
         args:
+            name: The device name.
             balls: The number of balls that have successfully ejected.
-            target: The target device that has received (or will be receiving)
-                the ejected ball(s).
+            target: The target device that has received (or will be receiving) the ejected ball(s).
         '''

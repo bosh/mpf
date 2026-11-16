@@ -25,8 +25,7 @@ class PlayfieldTransfer(SystemWideDevice):
     async def _initialize(self):
         await super()._initialize()
         if self.config['ball_switch']:
-            self.machine.events.add_handler('init_phase_3',
-                                            self._configure_switch)
+            self.machine.events.add_handler('init_phase_3', self._configure_switch)
 
         # load target playfield
         self.target = self.config['eject_target']
@@ -47,23 +46,25 @@ class PlayfieldTransfer(SystemWideDevice):
 
     def transfer(self):
         """Transfer a ball to the target playfield."""
-        self.debug_log("Ball went from %s to %s", self.source.name,
-                       self.target.name)
+        self.debug_log("Ball went from %s to %s", self.source.name, self.target.name)
 
         # source playfield is obviously active
         # we will continue using a callback to keep the ball count sane
         # (otherwise it may go to -1 during the next event)
-        self.machine.events.post('sw_' + self.source.name + '_active',
+        # TODO Alias event refactor
+        self.machine.events.post('sw_' + self.source.name + '_active', name=self.name, #TODO this may be wrong
                                  callback=self._ball_went_through2, balls=1)
         # event docstring in playfield module.
 
+        # TODO Alias event refactor
         self.machine.events.post('playfield_transfer_{}_ball_transferred'.format(self.name),
-                                 source=self.source, target=self.target)
+                                 name=self.name, source=self.source, target=self.target)
         '''event: playfield_transfer_(playfield_transfer)_ball_transferred
         desc: The playfield_transfer called (playfield_transfer) transferred a ball from playfield (source) to
         playfield (target).
 
         args:
+        name: The transfer device name.
         source: The source playfield.
         target: The target playfield.
         '''
@@ -72,14 +73,18 @@ class PlayfieldTransfer(SystemWideDevice):
     def _ball_went_through2(self, **kwargs):
         del kwargs
         # trigger remove ball from source playfield
+        # TODO Alias event refactor
         self.machine.events.post(
             'balldevice_captured_from_' + self.source.name,
+            name=self.source.name, # TODO THIS IS LIKELY WRONG
             balls=1)
         # event docstring covered elsewhere
 
         # inform target playfield about incoming ball
+        # TODO Alias event refactor
         self.machine.events.post(
             'balldevice_' + self.name + '_ejecting_ball',
+            name=self.name,
             balls=1,
             target=self.target,
             timeout=0,
@@ -92,8 +97,10 @@ class PlayfieldTransfer(SystemWideDevice):
         del target
         del timeout
         # promise (and hope) that it actually goes there
+        # TODO Alias event refactor
         self.machine.events.post(
             'balldevice_' + self.name + '_ball_eject_success',
+            name=self.name,
             balls=1,
             target=self.target,
             callback=self._ball_went_through4)
@@ -105,5 +112,6 @@ class PlayfieldTransfer(SystemWideDevice):
         del balls
         del target
         # since we confirmed eject target playfield has to be active
-        self.machine.events.post('sw_' + self.target.name + '_active')
+        # TODO Alias event refactor
+        self.machine.events.post('sw_' + self.target.name + '_active', name=self.target.name)
         # event docstring covered elsewhere

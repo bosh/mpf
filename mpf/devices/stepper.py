@@ -53,12 +53,14 @@ class Stepper(SystemWideDevice):
         self._target_position = self.config['reset_position']
 
         for position in self.config['named_positions']:
+            # TODO Alias event refactor
             self.machine.events.add_handler(self.config['named_positions'][position]['event'],
                                             self.event_move_to_position,
                                             position=position,
                                             speed=self.config['named_positions'][position]['speed'])
 
         for position in self.config['relative_positions']:
+            # TODO Alias event refactor
             self.machine.events.add_handler(self.config['relative_positions'][position]['event'],
                                             self.event_move_to_position,
                                             position=position,
@@ -72,10 +74,8 @@ class Stepper(SystemWideDevice):
                                                                 self.config['platform_settings'])
 
         if self.config['include_in_ball_search']:
-            self.machine.events.add_handler("ball_search_started",
-                                            self._ball_search_start)
-            self.machine.events.add_handler("ball_search_stopped",
-                                            self._ball_search_stop)
+            self.machine.events.add_handler("ball_search_started", self._ball_search_start)
+            self.machine.events.add_handler("ball_search_stopped", self._ball_search_stop)
 
         if self.config['homing_mode'] == "switch" and not self.config['homing_switch']:
             self.raise_config_error("Cannot use homing_mode switch without a homing_switch. Please add homing_switch or"
@@ -190,8 +190,16 @@ class Stepper(SystemWideDevice):
 
     def _post_ready_event(self):
         if not self._ball_search_started:
-            self.machine.events.post('stepper_' + self.name + "_ready", position=self._current_position)
-            '''event: stepper_(name)_ready'''
+            event_name = 'stepper_' + self.name + "_ready"
+            # TODO Alias event refactor
+            self.machine.events.post(event_name, name=self.name, position=self._current_position)
+            '''event: stepper_(name)_ready
+
+            desc: The stepper named (name) is ready.
+            args:
+                name: The device name.
+                position: The stepper position.
+            '''
 
     def stop_device(self):
         """Stop motor."""

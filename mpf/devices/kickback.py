@@ -20,8 +20,11 @@ class Kickback(AutofireCoil):
         """Post fired event."""
         super()._hit()
         if self._enabled:
-            self.machine.events.post("kickback_{}_fired".format(self.name))
+            # TODO Alias event refactor
+            self.machine.events.post("kickback_{}_fired".format(self.name), name=self.name)
             '''event: kickback_(name)_fired
 
             desc: Kickback fired a ball.
+            args:
+            name: The device name.
             '''

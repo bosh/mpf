@@ -68,9 +68,11 @@ class LogicBlock(SystemWideDevice, ModeDevice):
         """Validate logic block config."""
         del is_mode_config
         del debug_prefix
+        # TODO events_when refactor
         if 'events_when_complete' not in config:
             config['events_when_complete'] = ['logicblock_' + self.name + '_complete']
 
+        # TODO events_when refactor
         if 'events_when_hit' not in config:
             config['events_when_hit'] = ['logicblock_' + self.name + '_hit']
 
@@ -110,6 +112,7 @@ class LogicBlock(SystemWideDevice, ModeDevice):
                 player[self.player_state_variable] = LogicBlockState()
                 # enable device ONLY when we create a new entry in the player
                 if self._start_enabled:
+                    # TODO Alias event refactor UH OH HOOK SIDE?!?
                     mode.add_mode_event_handler(MODE_STARTING_EVENT_TEMPLATE.format(mode.name),
                                                 self.event_enable, priority=mode.priority + 1)
 
@@ -121,9 +124,11 @@ class LogicBlock(SystemWideDevice, ModeDevice):
             self._state = LogicBlockState()
             self.value = self.get_start_value()
             if self._start_enabled:
+                # TODO Alias event refactor UH OH HOOK SIDE?!?
                 mode.add_mode_event_handler(MODE_STARTING_EVENT_TEMPLATE.format(mode.name),
                                             self.event_enable, priority=mode.priority + 1)
 
+        # TODO Alias event refactor UH OH HOOK SIDE?!?
         mode.add_mode_event_handler("mode_{}_starting".format(mode.name), self.post_update_event)
 
     def device_removed_from_mode(self, mode: Mode):
@@ -169,7 +174,8 @@ class LogicBlock(SystemWideDevice, ModeDevice):
         del kwargs
         value = self._state.value
         enabled = self._state.enabled
-        self.machine.events.post("logicblock_{}_updated".format(self.name), value=value, enabled=enabled)
+        # TODO Alias event refactor
+        self.machine.events.post("logicblock_{}_updated".format(self.name), name=self.name, value=value, enabled=enabled)
         '''event: logicblock_(name)_updated
         config_section: counters, accruals, sequences
 
@@ -178,6 +184,7 @@ class LogicBlock(SystemWideDevice, ModeDevice):
         This might happen when the block advanced, it was resetted or restored.
 
         args:
+        name: The device name.
         value: The current value of this block.
         enabled: Whatever this block is enabled or not.
         '''
@@ -196,6 +203,7 @@ class LogicBlock(SystemWideDevice, ModeDevice):
 
     def _post_hit_events(self, **kwargs):
         self.post_update_event()
+        # TODO events_when refactor
         for event in self.config['events_when_hit']:
             self.machine.events.post(event, **kwargs)
             '''event: logicblock_(name)_hit
@@ -262,7 +270,8 @@ class LogicBlock(SystemWideDevice, ModeDevice):
         events is called.
         """
         self.info_log("Logic Block timeouted")
-        self.machine.events.post("{}_timeout".format(self.name))
+        # TODO Alias event refactor
+        self.machine.events.post("{}_timeout".format(self.name), name=self.name)
         '''event: (name)_timeout
         config_section: counters, accruals, sequences
 
@@ -271,6 +280,8 @@ class LogicBlock(SystemWideDevice, ModeDevice):
         Timeouts are disabled by default but you can set logic_block_timeout to
         enable them. They will run from start of your logic block until it is
         stopped.
+        args:
+        name: The logic block name.
         '''
         self.reset()
 
@@ -307,6 +318,7 @@ class LogicBlock(SystemWideDevice, ModeDevice):
 
         self.debug_log("Complete")
         if self.config['events_when_complete']:
+            # TODO events_when refactor
             for event in self.config['events_when_complete']:
                 self.machine.events.post(event)
         '''event: logicblock_(name)_complete
@@ -585,6 +597,7 @@ class Accrual(LogicBlock):
         """Add event handlers."""
         for step, events in enumerate(self.config['events']):
             for event in Util.string_to_event_list(events):
+                # TODO do we want to encode more than step?
                 self.machine.events.add_handler(event, self.hit, step=step)
 
     @event_handler(0)
@@ -668,6 +681,7 @@ class Sequence(LogicBlock):
         for step, events in enumerate(self.config['events']):
             for event in Util.string_to_event_list(events):
                 # increase priority with steps to prevent advancing multiple steps at once
+                # TODO does priority need to merge? do we need to encode more info?
                 self.machine.events.add_handler(event, self.hit, step=step, priority=step)
 
     def hit(self, step: int = None, **kwargs):

@@ -36,6 +36,14 @@ class Speedometer(SystemWideDevice):
         if self.time_start is not None:
             delta = self.config['stop_switch'].last_change - self.time_start
             self.time_start = None
-            print(delta)
-            self.machine.events.post("{}_hit".format(self.name), delta=delta)
-            # TODO: post event
+            print(delta) # TODO bare print
+
+            # TODO alias event refactor
+            self.machine.events.post("{}_hit".format(self.name), name=self.name, delta=delta)
+            '''event: (name)_hit
+            desc: The speedometer is reporting a hit.
+
+            args:
+            name: The device name.
+            delta: The time delta
+            '''

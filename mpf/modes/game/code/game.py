@@ -45,6 +45,7 @@ class Game(AsyncMode):
         self.balls_per_game = None
         self.max_players = None
 
+        # TODO Alias event refactor
         self.machine.events.add_handler('mode_{}_stopping'.format(self.name), self._stop_game_modes)
 
     async def _run(self):
@@ -249,8 +250,7 @@ class Game(AsyncMode):
                        self._balls_in_play, prev_balls_in_play)
 
         if self._balls_in_play > 0:
-            self.machine.events.post('balls_in_play',
-                                     balls=self._balls_in_play)
+            self.machine.events.post('balls_in_play', balls=self._balls_in_play)
             '''event: balls_in_play
             desc: The number of balls in play has just changed, and there is at
             least 1 ball in play.
@@ -365,21 +365,45 @@ class Game(AsyncMode):
         ball: The ball number
         balls_remaining: The number of balls left in the game (not including this one)
         is_extra_ball: True if this ball is an extra ball (default False)
-        player: The player number'''
+        player: The player number
+        '''
 
         if self.num_players == 1:
-            await self.machine.events.post_async('single_player_ball_started')
+            # TODO Alias event refactor
+            await self.machine.events.post_async('single_player_ball_started', **event_args)
             '''event: single_player_ball_started
-            desc: A new ball has started, and this is a single player game.'''
+            desc: A new ball has started, and this is a single player game.
+            args:
+            ball: The ball number
+            balls_remaining: The number of balls left in the game (not including this one)
+            is_extra_ball: True if this ball is an extra ball (default False)
+            player: The player number
+            '''
+
         else:
-            await self.machine.events.post_async('multi_player_ball_started')
+            # TODO Alias event refactor
+            await self.machine.events.post_async('multi_player_ball_started', **event_args)
             '''event: multi_player_ball_started
-            desc: A new ball has started, and this is a multiplayer game.'''
-            await self.machine.events.post_async(
-                'player_{}_ball_started'.format(self.player.number))
+            desc: A new ball has started, and this is a multiplayer game.
+            args:
+            ball: The ball number
+            balls_remaining: The number of balls left in the game (not including this one)
+            is_extra_ball: True if this ball is an extra ball (default False)
+            player: The player number
+            '''
+
+            # TODO Alias event refactor
+            await self.machine.events.post_async('player_{}_ball_started'.format(self.player.number), **event_args)
             '''event player_(number)_ball_started
             desc: A new ball has started, and this is a multiplayer game.
-            The player number is the (number) in the event that's posted.'''
+            The player number is the (number) in the event that's posted.
+            args:
+            args:
+            ball: The ball number
+            balls_remaining: The number of balls left in the game (not including this one)
+            is_extra_ball: True if this ball is an extra ball (default False)
+            player: The player number
+            '''
 
         if not hasattr(self.machine, "playfield") or not self.machine.playfield:
             raise AssertionError("The game did not define default playfield. Did you add tags: default to one of your "
@@ -781,5 +805,3 @@ class Game(AsyncMode):
 
         self.debug_log("Player rotate: Now up is Player %s",
                        self.player.number)
-
-# todo player events should come next, including tracking inc/dec, other values

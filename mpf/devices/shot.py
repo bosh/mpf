@@ -86,12 +86,14 @@ class Shot(EnableDisableMixin, ModeDevice):
         self._handlers = []
         priority = self.mode.priority + self.config['priority']
         for switch in self.config['switches']:
+            # TODO event_when refactor
             self._handlers.append(self.machine.events.add_handler("{}_active".format(switch.name),
                                                                   self.event_hit,
                                                                   priority=priority,
                                                                   blocking_facility="shot"))
 
         for switch, ms in list(self.config['delay_switch'].items()):
+            # TODO event_when refactor
             self._handlers.append(self.machine.events.add_handler("{}_active".format(switch.name),
                                                                   self._delay_switch_hit,
                                                                   name=switch.name,
@@ -100,6 +102,7 @@ class Shot(EnableDisableMixin, ModeDevice):
                                                                   blocking_facility="shot"))
 
         for event, ms in list(self.config['delay_event_list'].items()):
+            # TODO event_when refactor
             self._handlers.append(self.machine.events.add_handler(event,
                                                                   self._delay_switch_hit,
                                                                   name=event,
@@ -262,6 +265,7 @@ class Shot(EnableDisableMixin, ModeDevice):
 
         self.debug_log("Playing show: %s (starting at step %s). %s", show_name, start_step, settings)
 
+        # TODO event_when refactor -- revisit this -- its probably fine
         show_config = self.machine.show_controller.create_show_config(
             show_name, priority=priority, speed=settings.get("speed"),
             loops=settings.get("loops", -1), sync_ms=settings.get("sync_ms"), manual_advance=manual_advance,
@@ -338,8 +342,12 @@ class Shot(EnableDisableMixin, ModeDevice):
 
         self._notify_monitors(self.config['profile'].name, state)
 
+        # TODO Alias event refactor
         self.machine.events.post('{}_hit'.format(self.name),
-                                 profile=self.profile_name, state=state, advancing=advancing)
+                                 name=self.name,
+                                 profile=self.profile_name,
+                                 state=state,
+                                 advancing=advancing)
         '''event: (name)_hit
         desc: The shot called (name) was just hit.
 
@@ -348,11 +356,19 @@ class Shot(EnableDisableMixin, ModeDevice):
         allowing you to key in on the specific granularity you need.
 
         args:
+        name: The device name.
         profile: The name of the profile that was active when hit.
-        state: The name of the state the profile was in when it was hit'''
+        state: The name of the state the profile was in when it was hit
+        advancing: Whether this is a state advancing hit
+        '''
 
+        # TODO Event deprecation - redundant shot profile spec
+        # TODO Alias event refactor
         self.machine.events.post('{}_{}_hit'.format(self.name, self.profile_name),
-                                 profile=self.profile_name, state=state, advancing=advancing)
+                                 name=self.name,
+                                 profile=self.profile_name,
+                                 state=state,
+                                 advancing=advancing)
         '''event: (name)_(profile)_hit
         desc: The shot called (name) was just hit with the profile (profile)
         active.
@@ -367,11 +383,19 @@ class Shot(EnableDisableMixin, ModeDevice):
         different (profile) values.
 
         args:
+        name: The device name.
         profile: The name of the profile that was active when hit.
-        state: The name of the state the profile was in when it was hit'''
+        state: The name of the state the profile was in when it was hit
+        advancing: Whether this is a state advancing hit
+        '''
 
+        # TODO Event deprecation - redundant shot profile spec
+        # TODO Alias event refactor
         self.machine.events.post('{}_{}_{}_hit'.format(self.name, self.profile_name, state),
-                                 profile=self.profile_name, state=state, advancing=advancing)
+                                 name=self.name,
+                                 profile=self.profile_name,
+                                 state=state,
+                                 advancing=advancing)
         '''event: (name)_(profile)_(state)_hit
         desc: The shot called (name) was just hit with the profile (profile)
         active in the state (state).
@@ -386,11 +410,18 @@ class Shot(EnableDisableMixin, ModeDevice):
         different (profile) and (state) values.
 
         args:
+        name: The device name.
         profile: The name of the profile that was active when hit.
-        state: The name of the state the profile was in when it was hit'''
+        state: The name of the state the profile was in when it was hit
+        advancing: Whether this is a state advancing hit
+        '''
 
+        # TODO Alias event refactor
         self.machine.events.post('{}_{}_hit'.format(self.name, state),
-                                 profile=self.profile_name, state=state, advancing=advancing)
+                                 name=self.name,
+                                 profile=self.profile_name,
+                                 state=state,
+                                 advancing=advancing)
         '''event: (name)_(state)_hit
         desc: The shot called (name) was just hit while in the profile (state).
 
@@ -404,8 +435,11 @@ class Shot(EnableDisableMixin, ModeDevice):
         different (profile) and (state) values.
 
         args:
+        name: The device name.
         profile: The name of the profile that was active when hit.
-        state: The name of the state the profile was in when it was hit'''
+        state: The name of the state the profile was in when it was hit
+        advancing: Whether this is a state advancing hit
+        '''
 
         return True
 
@@ -433,6 +467,7 @@ class Shot(EnableDisableMixin, ModeDevice):
     def _register_control_event_handlers(self):
         for control_event in self.config['control_events']:
             for event in control_event['events']:
+                # TODO Alias event refactor - check it passes through
                 self.machine.events.add_handler(event, self._control_events,
                                                 control_event_config=control_event)
 

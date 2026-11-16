@@ -52,10 +52,8 @@ class Motor(SystemWideDevice):
             self.machine.events.add_handler(event, self.event_go_to_position, position=position)
 
         if self.config['include_in_ball_search']:
-            self.machine.events.add_handler("ball_search_started",
-                                            self._ball_search_start)
-            self.machine.events.add_handler("ball_search_stopped",
-                                            self._ball_search_stop)
+            self.machine.events.add_handler("ball_search_started", self._ball_search_start)
+            self.machine.events.add_handler("ball_search_stopped", self._ball_search_stop)
 
     def _validate_last_position(self) -> bool:
         """Verify that at most one position switch is active."""
@@ -175,11 +173,15 @@ class Motor(SystemWideDevice):
     def _reached_position(self, position):
         """Handle that motor handled its target position."""
         self.info_log("Motor reached position %s. Stopping motor.", position)
-        self.machine.events.post("motor_{}_reached_{}".format(self.name, position))
+        event_name = "motor_{}_reached_{}".format(self.name, position)
+        # TODO Alias event refactor
+        self.machine.events.post(event_name, name=self.name, position=position)
         '''event: motor_(name)_reached_(position)
 
         desc: A motor device called (name) reached position (position)
-        (device)
+        args:
+        name: The device name.
+        position: The position value.
         '''
 
         # disable motor

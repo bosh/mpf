@@ -47,7 +47,9 @@ class ShotGroup(ModeDevice):
         self.rotation_pattern = deque(self.profile.config['rotation_pattern'])
         self.rotation_enabled = not self.config['enable_rotation_events']
         for shot in self.config['shots']:
+            # TODO Alias event refactor
             self.machine.events.add_handler("{}_hit".format(shot.name), self._hit, shot=shot.name)
+            # TODO Alias event refactor
             self.machine.events.add_handler("player_shot_{}".format(shot.name), self._check_for_complete)
 
     def device_removed_from_mode(self, mode):
@@ -83,22 +85,27 @@ class ShotGroup(ModeDevice):
             return
 
         # if we reached this point we got a common state
-        self.debug_log(
-            "Shot group is complete with state: %s", state)
+        self.debug_log("Shot group is complete with state: %s", state)
 
-        self.machine.events.post('{}_complete'.format(self.name), state=state)
+        # TODO Alias event refactor
+        self.machine.events.post('{}_complete'.format(self.name), name=self.name, state=state)
         '''event: (name)_complete
         desc: All the member shots in the shot group called (name)
         are in the same state.
 
         args:
-          state: name of the common state of all shots.
+        name: The shot group name.
+        state: name of the common state of all shots.
         '''
 
-        self.machine.events.post('{}_{}_complete'.format(self.name, state))
+        # TODO Alias event refactor
+        self.machine.events.post('{}_{}_complete'.format(self.name, state), name=self.name, state=state)
         '''event: (name)_(state)_complete
         desc: All the member shots in the shot group called (name)
         are in the same state named (state).
+        args:
+        name: The shot group name.
+        state: name of the common state of all shots.
         '''
 
     @event_handler(2)
@@ -157,15 +164,25 @@ class ShotGroup(ModeDevice):
             }
         """
         del advancing
-        self.machine.events.post(self.name + '_hit', shot=shot)
+        # TODO Alias events refactor
+        self.machine.events.post(self.name + '_hit', name=name, shot_name=shot.name, shot=shot)
         '''event: (name)_hit
-        desc: A member shots in the shot group called (name)
-        has been hit.
+        desc: A member shots in the shot group called (name) has been hit.
+        args:
+        name: The shot group name.
+        shot_name: The shot name.
+        shot: The shot.
         '''
-        self.machine.events.post("{}_{}_hit".format(self.name, kwargs['state']), shot=shot)
+
+        # TODO is this a name or device object
+        # TODO Alias event refactor
+        self.machine.events.post("{}_{}_hit".format(self.name, kwargs['state']), name=name, shot_name=shot.name, shot=shot)
         '''event: (name)_(state)_hit
-        desc: A member shot with state (state) in the shot group (name)
-        has been hit.
+        desc: A member shot with state (state) in the shot group (name) has been hit.
+        args:
+        name: The shot group name.
+        shot_name: The shot name.
+        shot: The shot.
         '''
 
     @event_handler(9)

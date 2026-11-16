@@ -102,6 +102,7 @@ class StateMachine(SystemWideDevice, ModeDevice):
         self._remove_handlers()
         state_config = self.config['states'][self.state]
         if state_config['events_when_stopped']:
+            # TODO events_when refactor
             for event_name in state_config['events_when_stopped']:
                 self.machine.events.post(event_name)
 
@@ -120,6 +121,7 @@ class StateMachine(SystemWideDevice, ModeDevice):
         state_config = self.config['states'][state]
         self.state = state
         if state_config['events_when_started']:
+            # TODO events_when refactor
             for event_name in state_config['events_when_started']:
                 self.machine.events.post(event_name)
 
@@ -131,10 +133,12 @@ class StateMachine(SystemWideDevice, ModeDevice):
 
         state_config = self.config['states'][state]
         if state_config['events_when_restored']:
+            # TODO events_when refactor
             for event_name in state_config['events_when_restored']:
                 self.machine.events.post(event_name)
 
         elif self.config['repost_start_events_on_restore'] and state_config['events_when_started']:
+            # TODO events_when refactor
             for event_name in state_config['events_when_started']:
                 self.machine.events.post(event_name)
 
@@ -162,6 +166,7 @@ class StateMachine(SystemWideDevice, ModeDevice):
         self.info_log("Transitioning from %s to %s", self.state, transition_config["target"])
         self._stop_current_state()
         if transition_config['events_when_transitioning']:
+            # TODO events_when refactor
             for event_name in transition_config['events_when_transitioning']:
                 self.machine.events.post(event_name)
         self._start_state(transition_config['target'])

@@ -100,6 +100,8 @@ class Switch(SystemWideDevice, DevicePositionMixin):
         if "|" in event_str:
             event, ev_time = event_str.split("|")
             ms = Util.string_to_ms(ev_time)
+            # TODO events_when refactor
+            # TODO Event alias refactor/name refactor
             self.machine.switch_controller.add_switch_handler_obj(
                 switch=self,
                 state=state,
@@ -126,6 +128,7 @@ class Switch(SystemWideDevice, DevicePositionMixin):
             self._post_events(state)
 
     def _post_events(self, state):
+        # TODO events_when refactor
         for event in self._events_to_post[state]:
             if self._debug or self.machine.events.does_event_exist(event):
                 self.machine.events.post(event)
@@ -162,6 +165,7 @@ class Switch(SystemWideDevice, DevicePositionMixin):
             self.add_handler(state=1, callback=self._post_events, callback_kwargs={"state": 1})
             self.add_handler(state=0, callback=self._post_events, callback_kwargs={"state": 0})
 
+        # TODO Alias event refactor the whole file ew
         if self.machine.config['mpf']['auto_create_switch_events']:
             self._create_activation_event(
                 self.machine.config['mpf']['switch_event_active'].replace(
@@ -197,6 +201,7 @@ class Switch(SystemWideDevice, DevicePositionMixin):
             Note that this will only be posted if there is an event handler for it or if debug is set to True on this
             switch for performance reasons.
             '''
+            # TODO events_when refactor
             self._create_activation_event(
                 self.machine.config['mpf']['switch_tag_event'].replace(
                     '%', tag) + "_inactive", 0)
@@ -206,10 +211,12 @@ class Switch(SystemWideDevice, DevicePositionMixin):
             switch for performance reasons.
             '''
 
+        # TODO events_when refactor
         for event in Util.string_to_event_list(
                 self.config['events_when_activated']):
             self._create_activation_event(event, 1)
 
+        # TODO events_when refactor
         for event in Util.string_to_event_list(
                 self.config['events_when_deactivated']):
             self._create_activation_event(event, 0)

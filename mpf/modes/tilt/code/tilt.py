@@ -129,20 +129,25 @@ class Tilt(Mode):
         if warnings >= warnings_to_tilt:
             self.tilt()
         else:
-            self.machine.events.post(
-                'tilt_warning',
-                warnings=warnings,
-                warnings_remaining=warnings_to_tilt - warnings)
+            warnings_remaining = warnings_to_tilt - warnings
+            self.machine.events.post('tilt_warning', warnings=warnings, warnings_remaining=warnings_remaining)
             '''event: tilt_warning
             desc: A tilt warning just happened.
             args:
             warnings: The total number of warnings so far.
             warnings_remaining: The remaining number of warnings until a tilt.
             '''
-            self.machine.events.post('tilt_warning_{}'.format(warnings))
+
+            # TODO Alias event refactor
+            self.machine.events.post('tilt_warning_{}'.format(warnings),
+                                     warnings=warnings, warnings_remaining=warnings_remaining)
             '''event: tilt_warning_(number)
             desc: A tilt warning just happened. The number of this tilt
-            warning is in the event name in the (number).'''
+            warning is in the event name in the (number).
+            args:
+            warnings: The total number of warnings so far.
+            warnings_remaining: The remaining number of warnings until a tilt.
+            '''
 
     def reset_warnings(self, **kwargs):
         """Reset the tilt warnings for the current player."""
@@ -186,6 +191,7 @@ class Tilt(Mode):
         for device in self.machine.ball_devices.values():
             if 'drain' in device.tags:
                 self.tilt_event_handlers.append(
+                    # TODO event_when refactor
                     self.machine.events.add_handler(
                         'balldevice_{}_ball_enter'.format(device.name),
                         self._tilted_ball_drain))

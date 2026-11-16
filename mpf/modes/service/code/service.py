@@ -519,7 +519,10 @@ sort_devices_by_number: single|bool|True
 
     def _update_volume_slide(self, items, position, is_change=False, focus_change=None):
         config = items[position]
-        event = "service_volume_{}".format("edit" if is_change else "start")
+        if is_change:
+            event = "service_volume_edit"
+        else:
+            event = "service_volume_start"
         # The 'focus_change' argument can be used to start/stop sound files playing
         # during the service menu, to test volume.
         self.machine.events.post(event,
@@ -658,10 +661,10 @@ sort_devices_by_number: single|bool|True
     def _update_settings_slide(self, items, position, is_change=False):
         setting = items[position]
         label = self.machine.settings.get_setting_value_label(setting.name)
-        event = "service_settings_{}".format("edit" if is_change else "start")
-        self.machine.events.post(event,
-                                 settings_label=setting.label,
-                                 value_label=label)
+        if is_change:
+            self.machine.events.post("service_settings_edit", settings_label=setting.label, value_label=label)
+        else:
+            self.machine.events.post("service_settings_start", settings_label=setting.label, value_label=label)
 
     async def _settings_menu(self, settings_type):
         position = 0

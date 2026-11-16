@@ -17,16 +17,19 @@ class EventEjector(BallDeviceEjector):
 
     async def eject_one_ball(self, is_jammed, eject_try, balls_in_device):
         """Post event."""
+        # TODO events_when refactor
         for event in self.config["events_when_eject_try"]:
             self.machine.events.post(event, is_jammed=is_jammed, eject_try=eject_try, balls_in_device=balls_in_device)
 
     async def reorder_balls(self):
         """Reorder balls when jammed."""
+        # TODO events_when refactor
         for event in self.config["events_when_reorder_balls"]:
             self.machine.events.post(event)
 
     def ball_search(self, phase, iteration):
         """Run ball search."""
+        # TODO events_when refactor
         for event in self.config["events_when_ball_search"]:
             self.machine.events.post(event, phase=phase, iteration=iteration)
 

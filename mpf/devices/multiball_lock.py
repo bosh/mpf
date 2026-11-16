@@ -55,6 +55,7 @@ class MultiballLock(EnableDisableMixin, ModeDevice):
         self.machine.events.add_handler("ball_ending", self._ball_ending)
 
         for device in self.lock_devices:
+            # TODO Alias event refactor
             self.machine.events.add_handler(f'balldevice_{device.name}_ball_missing',
                                             self._lost_ball, device=device)
 
@@ -179,10 +180,12 @@ class MultiballLock(EnableDisableMixin, ModeDevice):
         blocking_facility = self.config['blocking_facility']
         # register on ball_enter of lock_devices
         for device in self.lock_devices:
+            # TODO Alias event refactor
             self.machine.events.add_handler(
                 'balldevice_' + device.name + '_ball_enter',
                 self._lock_ball, device=device, priority=priority,
                 blocking_facility=blocking_facility)
+            # TODO Alias event refactor
             self.machine.events.add_handler(
                 'balldevice_' + device.name + '_ball_entered',
                 self._post_events, device=device, priority=priority,
@@ -263,14 +266,16 @@ class MultiballLock(EnableDisableMixin, ModeDevice):
 
         new_locked_balls = self.locked_balls + 1
         # post event for ball capture
+        # TODO Event refactor wtf
         self._events[device].append({"event": 'multiball_lock_' + self.name + '_locked_ball',
+                                     "name": self.name,
                                      "total_balls_locked": new_locked_balls})
         '''event: multiball_lock_(name)_locked_ball
         desc: The multiball lock device (name) has just locked one additional ball.
 
         args:
-            total_balls_locked: The current total number of balls this device
-                has locked.
+            name: The multiball lock name.
+            total_balls_locked: The current total number of balls this device has locked.
         '''
         if self.config['locked_ball_counting_strategy'] != "physical_only":
             self.locked_balls = new_locked_balls
@@ -310,6 +315,7 @@ class MultiballLock(EnableDisableMixin, ModeDevice):
         if (self.config['locked_ball_counting_strategy'] == "physical_only" and
             new_locked_balls >= self.config['balls_to_lock']) or \
                 self.remaining_virtual_space_in_lock == 0:
+            # TODO Event WTFs
             self._events[device].append({'event': 'multiball_lock_' + self.name + '_full',
                                          'balls': new_locked_balls})
         '''event: multiball_lock_(name)_full

@@ -23,6 +23,7 @@ class TimedSwitch(SystemWideDevice, ModeDevice):
         config = super().validate_and_parse_config(config, is_mode_config, debug_prefix)
 
         for x in ('active', 'released'):
+            # TODO event_when refactor
             if not config['events_when_{}'.format(x)]:
                 config['events_when_{}'.format(x)] = [
                     "{}_{}".format(self.name, x)]
@@ -78,6 +79,7 @@ class TimedSwitch(SystemWideDevice, ModeDevice):
     def _activate(self, switch_name, state, ms):
         del state, ms
         if not self.active_switches:
+            # TODO events_when refactor
             for event in self.config['events_when_active']:
                 self.machine.events.post(event)
 
@@ -95,6 +97,7 @@ class TimedSwitch(SystemWideDevice, ModeDevice):
             self.active_switches.remove(switch_name)
 
             if not self.active_switches:
+                # TODO events_when refactor
                 for event in self.config['events_when_released']:
                     self.machine.events.post(event)
         except KeyError:

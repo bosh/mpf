@@ -170,6 +170,7 @@ class Timer(ModeDevice):
                                      format(entry['action']), self.name)
 
             self.event_keys.append(
+                # TODO Alias event refactor
                 self.machine.events.add_handler(entry['event'], handler, **kwargs))
 
     def _remove_control_events(self):
@@ -219,7 +220,9 @@ class Timer(ModeDevice):
         self.delay.remove('pause')
         self._create_system_timer()
 
+        # TODO Alias event refactor
         self.machine.events.post('timer_' + self.name + '_started',
+                                 name=self.name,
                                  ticks=self.ticks,
                                  ticks_remaining=self.ticks_remaining)
         '''event: timer_(name)_started
@@ -227,6 +230,7 @@ class Timer(ModeDevice):
         desc: The timer named (name) has just started.
 
         args:
+            name: The device name.
             ticks: The current tick number this timer is at.
             ticks_remaining: The number of ticks in this timer remaining.
         '''
@@ -272,7 +276,9 @@ class Timer(ModeDevice):
         self.running = False
         self._remove_system_timer()
 
+        # TODO Alias event refactor
         self.machine.events.post('timer_' + self.name + '_stopped',
+                                 name=self.name,
                                  ticks=self.ticks,
                                  ticks_remaining=self.ticks_remaining)
         '''event: timer_(name)_stopped
@@ -283,6 +289,7 @@ class Timer(ModeDevice):
         it ended or because it was stopped early by some other event.
 
         args:
+            name: The device name.
             ticks: The current tick number this timer is at.
             ticks_remaining: The number of ticks in this timer remaining.
         '''
@@ -308,7 +315,9 @@ class Timer(ModeDevice):
         self.running = False
 
         self._remove_system_timer()
+        # TODO Alias event refactor
         self.machine.events.post('timer_' + self.name + '_paused',
+                                 name=self.name,
                                  ticks=self.ticks,
                                  ticks_remaining=self.ticks_remaining)
         '''event: timer_(name)_paused
@@ -316,6 +325,7 @@ class Timer(ModeDevice):
         desc: The timer named (name) has paused.
 
         args:
+            name: The device name.
             ticks: The current tick number this timer is at.
             ticks_remaining: The number of ticks in this timer remaining.
         '''
@@ -341,7 +351,9 @@ class Timer(ModeDevice):
 
         self.stop()
 
+        # TODO Alias event refactor
         self.machine.events.post('timer_' + self.name + '_complete',
+                                 name=self.name,
                                  ticks=self.ticks,
                                  ticks_remaining=self.ticks_remaining)
         '''event: timer_(name)_complete
@@ -352,6 +364,7 @@ class Timer(ModeDevice):
         posted, depending on its settings.
 
         args:
+            name: The device name.
             ticks: The current tick number this timer is at.
             ticks_remaining: The number of ticks in this timer remaining.
         '''
@@ -383,7 +396,9 @@ class Timer(ModeDevice):
 
     def _post_tick_events(self):
         if not self._check_for_done():
+            # TODO Alias event refactor
             self.machine.events.post('timer_{}_tick'.format(self.name),
+                                     name=self.name,
                                      ticks=self.ticks,
                                      ticks_remaining=self.ticks_remaining)
             '''event: timer_(name)_tick
@@ -392,6 +407,7 @@ class Timer(ModeDevice):
             depending on its settings).
 
             args:
+                name: The device name.
                 ticks: The new tick number this timer is at.
                 ticks_remaining: The new number of ticks in this timer
                     remaining.
@@ -423,7 +439,9 @@ class Timer(ModeDevice):
         self.ticks = new_value
         ticks_added = new_value - timer_value
 
+        # TODO Alias event refactor
         self.machine.events.post('timer_' + self.name + '_time_added',
+                                 name=self.name,
                                  ticks=self.ticks,
                                  ticks_added=ticks_added,
                                  ticks_remaining=self.ticks_remaining)
@@ -432,6 +450,7 @@ class Timer(ModeDevice):
         desc: The timer named (name) has just had time added to it.
 
         args:
+            name: The device name.
             ticks: The new tick number this timer is at.
             ticks_remaining: The new number of ticks in this timer remaining.
             ticks_added: How many ticks were just added.
@@ -453,7 +472,9 @@ class Timer(ModeDevice):
 
         self.ticks -= ticks_subtracted
 
+        # TODO Alias event refactor
         self.machine.events.post('timer_' + self.name + '_time_subtracted',
+                                 name=self.name,
                                  ticks=self.ticks,
                                  ticks_subtracted=ticks_subtracted,
                                  ticks_remaining=self.ticks_remaining)
@@ -462,6 +483,7 @@ class Timer(ModeDevice):
         desc: The timer named (name) just had some ticks removed.
 
         args:
+            name: The device name.
             ticks: The new current tick number this timer is at.
             ticks_remaining: The new number of ticks in this timer remaining.
             ticks_subtracted: How many ticks were just subtracted from this

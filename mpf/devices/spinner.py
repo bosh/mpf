@@ -46,8 +46,7 @@ class Spinner(EnableDisableMixinSystemWideDevice, SystemWideDevice):
             self._event_buffer_ms = (1 / self.config['max_events_per_second']) * 1000
             self.log.debug("Configured event buffer for %s", self._event_buffer_ms)
         # Can't read the switch until the switch controller is set up
-        self.machine.events.add_handler('init_phase_4',
-                                        self._register_switch_handlers, priority=1)
+        self.machine.events.add_handler('init_phase_4', self._register_switch_handlers, priority=1)
 
     def _register_switch_handlers(self, **kwargs):
         del kwargs
@@ -65,7 +64,8 @@ class Spinner(EnableDisableMixinSystemWideDevice, SystemWideDevice):
             return
         label = kwargs.get("label")
         if not self._active:
-            self.machine.events.post("spinner_{}_active".format(self.name), label=label)
+            # TODO Alias event refactor
+            self.machine.events.post("spinner_{}_active".format(self.name), name=name, label=label)
             '''event: spinner_(name)_active
             desc: The idle spinner (name) was just hit and became active.
 
@@ -73,15 +73,21 @@ class Spinner(EnableDisableMixinSystemWideDevice, SystemWideDevice):
             is not already active.
 
             args:
+            name: The device name.
             label: The label of the switch that triggered the activation
             '''
             if label:
-                self.machine.events.post("spinner_{}_{}_active".format(self.name, label))
+                # TODO Event alias refactor
+                self.machine.events.post("spinner_{}_{}_active".format(self.name, label), name=self.name, label=label)
                 '''event: spinner_(name)_(label)_active
                 desc: The idle spinner (name) was just hit and became active.
 
                 This event will post whenever a spinner switch is hit and the spinner
                 is not already active, but only if labels are defined for the spinner.
+
+                args:
+                name: The device name.
+                label: The label of the switch that triggered the activation
                 '''
             self._active = True
             self._idle = False
@@ -99,7 +105,8 @@ class Spinner(EnableDisableMixinSystemWideDevice, SystemWideDevice):
 
         label = kwargs.get("label")
 
-        self.machine.events.post("spinner_{}_hit".format(self.name), hits=self.hits,
+        # TODO Event alias refactor
+        self.machine.events.post("spinner_{}_hit".format(self.name), hits=self.hits, name=self.name,
                                  change=self.hits - last_hits, label=label)
         '''event: spinner_(name)_hit
         desc: The spinner (name) was just hit.
@@ -107,17 +114,25 @@ class Spinner(EnableDisableMixinSystemWideDevice, SystemWideDevice):
         This event will post whenever a spinner switch is hit.
 
         args:
+        name: The device name.
         hits: The number of switch hits the spinner has had since it became active
         label: The label of the switch that was hit
         '''
+
         if label:
-            self.machine.events.post("spinner_{}_{}_hit".format(self.name, label),
+            # TODO Event alias refactor
+            self.machine.events.post("spinner_{}_{}_hit".format(self.name, label), name=self.name,
                                      hits=self.hits, change=self.hits - last_hits)
             '''event: spinner_(name)_(label)_hit
             desc: The spinner (name) was just hit on the switch labelled (label).
 
             This event will post whenever a spinner switch is hit and labels
             are defined for the spinner
+
+            args:
+            name: The device name.
+            hits: The number of switch hits the spinner had while it was active
+            change: The number of hits since the last hits value
             '''
         self.delay.reset(self._active_ms, self._deactivate, "deactivate")
 
@@ -128,7 +143,8 @@ class Spinner(EnableDisableMixinSystemWideDevice, SystemWideDevice):
     def _deactivate(self, **kwargs):
         """Post an 'inactive' event after no switch hits for the active_ms duration."""
         del kwargs
-        self.machine.events.post("spinner_{}_inactive".format(self.name), hits=self.hits)
+        # TODO Alias event refactor
+        self.machine.events.post("spinner_{}_inactive".format(self.name), name=self.name, hits=self.hits)
         '''event: spinner_(name)_inactive
         desc: The spinner (name) is no longer receiving hits
 
@@ -136,6 +152,7 @@ class Spinner(EnableDisableMixinSystemWideDevice, SystemWideDevice):
         its active_ms has timed out.
 
         args:
+        name: The device name.
         hits: The number of switch hits the spinner had while it was active
         '''
         self._active = False
@@ -149,7 +166,8 @@ class Spinner(EnableDisableMixinSystemWideDevice, SystemWideDevice):
     def _on_idle(self, **kwargs):
         """Post an 'idle' event if the spinner has been inactive for the idle_ms duration."""
         del kwargs
-        self.machine.events.post("spinner_{}_idle".format(self.name), hits=self.hits)
+        # TODO Alias event refactor
+        self.machine.events.post("spinner_{}_idle".format(self.name), name=self.name, hits=self.hits)
         '''event: spinner_(name)_idle
         desc: The spinner (name) is now idle
 
@@ -158,6 +176,7 @@ class Spinner(EnableDisableMixinSystemWideDevice, SystemWideDevice):
         will not post.
 
         args:
+        name: The device name.
         hits: The number of switch hits the spinner had while it was active
         '''
         self.hits = 0

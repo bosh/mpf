@@ -92,8 +92,7 @@ class Attract(Carousel):
             if self.machine.switch_controller.is_active(switch):
                 self.start_buttons_held.append(switch.name)
 
-        self.machine.events.post_boolean('request_to_start_game',
-                                         callback=self.result_of_start_request)
+        self.machine.events.post_boolean('request_to_start_game', callback=self.result_of_start_request)
         '''event: request_to_start_game
         desc: This event is posted when to start a game. This is a boolean
         event. Any handler can return *False* and the game will not be
@@ -123,9 +122,7 @@ class Attract(Carousel):
             self.debug_log("Game start was denied")
         else:  # else because we want to start on True *or* None
             self.debug_log("Let's start a game!!")
-            self.machine.events.post('game_start',
-                                     buttons=self.start_buttons_held,
-                                     hold_time=self.start_hold_time)
+            self.machine.events.post('game_start', buttons=self.start_buttons_held, hold_time=self.start_hold_time)
             '''event: game_start
             desc: Starts game while bypassing the many systems which have to
             "approve" the start. (Are the balls in the right places, are there

@@ -74,22 +74,27 @@ class Magnet(EnableDisableMixinSystemWideDevice, SystemWideDevice):
         self._active = True
         self.config['magnet_coil'].enable()
 
-        self.machine.events.post("magnet_{}_grabbing_ball".format(self.name))
+        # TODO Alias event refactor
+        self.machine.events.post("magnet_{}_grabbing_ball".format(self.name), name=self.name)
         '''event: magnet_(name)_grabbing_ball
 
         desc: The magnet called (name) is attempting to grab a ball.
+        args:
+        name: The device name.
         '''
         self.delay.add(self.config['grab_time'], self._grabbing_done)
 
     def _grabbing_done(self):
-        self.machine.events.post("magnet_{}_grabbed_ball".format(self.name))
+        # TODO Alias event refactor
+        self.machine.events.post("magnet_{}_grabbed_ball".format(self.name), name=self.name)
         '''event: magnet_(name)_grabbed_ball
 
         desc: The magnet called (name) has completed grabbing the ball.
         Note that the magnet doesn't actually "know" whether it
         successfully grabbed a ball or not, so this even is saying that it
-        things it did.
-        to).
+        things it did. to).
+        args:
+        name: The device name.
         '''
 
     @event_handler(8)
@@ -106,10 +111,13 @@ class Magnet(EnableDisableMixinSystemWideDevice, SystemWideDevice):
         self._active = False
         self._release_in_progress = True
         self.debug_log("Releasing ball.")
-        self.machine.events.post("magnet_{}_releasing_ball".format(self.name))
+        # TODO Alias event refactor
+        self.machine.events.post("magnet_{}_releasing_ball".format(self.name), name=self.name)
         '''event: magnet_(name)_releasing_ball
 
         desc: The magnet called (name) is in the process of releasing a ball.
+        args:
+        name: The device name.
         '''
 
         self.delay.add(self.config['release_time'], self._release_done)
@@ -117,10 +125,13 @@ class Magnet(EnableDisableMixinSystemWideDevice, SystemWideDevice):
 
     def _release_done(self):
         self._release_in_progress = False
-        self.machine.events.post("magnet_{}_released_ball".format(self.name))
+        # TODO Alias event refactor
+        self.machine.events.post("magnet_{}_released_ball".format(self.name), name=self.name)
         '''event: magnet_(name)_released_ball
 
         desc: The magnet called (name) has just released a ball.
+        args:
+        name: The device name.
         '''
 
     @event_handler(7)
@@ -137,11 +148,14 @@ class Magnet(EnableDisableMixinSystemWideDevice, SystemWideDevice):
         self._active = False
         self._release_in_progress = True
         self.debug_log("Flinging ball.")
-        self.machine.events.post("magnet_{}_flinging_ball".format(self.name))
+        # TODO Alias event refactor
+        self.machine.events.post("magnet_{}_flinging_ball".format(self.name), name=self.name)
         '''event: magnet_(name)_flinging_ball
 
         desc: The magnet called (name) is flinging a ball by disabling and
         enabling the magnet again for a short time.
+        args:
+        name: The device name.
         '''
 
         self.delay.add(self.config['fling_drop_time'], self._fling_reenable)
@@ -154,8 +168,11 @@ class Magnet(EnableDisableMixinSystemWideDevice, SystemWideDevice):
     def _fling_done(self):
         self._release_in_progress = False
         self.config['magnet_coil'].disable()
-        self.machine.events.post("magnet_{}_flinged_ball".format(self.name))
+        # TODO Alias event refactor
+        self.machine.events.post("magnet_{}_flinged_ball".format(self.name), name=self.name)
         '''event: magnet_(name)_flinged_ball
 
         desc: The magnet called (name) has just flinged a ball.
+        args:
+        name: The device name.
         '''

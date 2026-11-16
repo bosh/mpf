@@ -58,7 +58,9 @@ class BallCountHandler(BallDeviceStateHandler):
         else:
             self._has_balls.clear()
 
-        self.machine.events.post("balldevice_{}_ball_count_changed".format(self.ball_device.name), balls=count)
+        # TODO Alias event refactor
+        event_name = "balldevice_{}_ball_count_changed".format(self.ball_device.name)
+        self.machine.events.post(event_name, name=self.ball_device.name, balls=count)
         '''event: balldevice_(name)_ball_count_changed
         config_section: ball_devices
         class_label: ball_device
@@ -68,7 +70,7 @@ class BallCountHandler(BallDeviceStateHandler):
         This event may also be called without a change in some circumstances.
 
         args:
-
+        name: The device name.
         balls: The number of new balls in this device.
         '''
 

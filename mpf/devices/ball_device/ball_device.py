@@ -202,40 +202,41 @@ class BallDevice(SystemWideDevice):
         self.available_balls = self.ball_count_handler.handled_balls
 
     async def _post_capture_from_playfield_event(self):
-        await self.machine.events.post_async('balldevice_captured_from_{}'.format(
-            self.config['captures_from'].name),
-            balls=1)
+        from_name = self.config['captures_from'].name
+        event_name = 'balldevice_captured_from_{}'.format(from_name)
+        # TODO Alias event refactor
+        await self.machine.events.post_async(event_name, balls=1, captures_from=from_name, name=self.name)
         '''event: balldevice_captured_from_(captures_from)
 
-        desc: A ball device has just captured a ball from the device called
-        (captures_from)
+        desc: A ball device has just captured a ball from the device called (captures_from)
 
         args:
+        name: The ball device name.
+        captures_from: The device name of the capture from device.
         balls: The number of balls that were captured.
-
         '''
 
     async def _post_enter_event(self, unclaimed_balls, new_available_balls):
         self.debug_log("Processing new ball")
-        result = await self.machine.events.post_relay_async('balldevice_{}_ball_enter'.format(
-            self.name),
+        event_name = 'balldevice_{}_ball_enter'.format(self.name)
+        # TODO Alias event refactor
+        result = await self.machine.events.post_relay_async(event_name,
+            name=self.name,
             new_balls=1,
             unclaimed_balls=unclaimed_balls,
             new_available_balls=new_available_balls,
             device=self)
         '''event: balldevice_(name)_ball_enter
 
-        desc: A ball (or balls) have just entered the ball device called
-        "name".
-
+        desc: A ball (or balls) have just entered the ball device called "name".
         Note that this is a relay event based on the "unclaimed_balls" arg. Any
-        unclaimed balls in the relay will be processed as new balls entering
-        this device.
+        unclaimed balls in the relay will be processed as new balls entering this device.
 
         Please be aware that we did not add those balls to balls or available_balls of the device during this event.
 
         args:
 
+        name: The device name.
         unclaimed_balls: The number of balls that have not yet been claimed.
         device: A reference to the ball device object that is posting this
         event.
@@ -400,9 +401,7 @@ class BallDevice(SystemWideDevice):
                     break
 
         # register event handler for available balls at source devices
-        self.machine.events.add_handler(
-            'balldevice_balls_available',
-            self._source_device_balls_available)
+        self.machine.events.add_handler('balldevice_balls_available', self._source_device_balls_available)
 
     def _balls_added_callback(self, new_balls, unclaimed_balls):
         # If we still have unclaimed_balls here, that means that no one claimed
@@ -443,22 +442,23 @@ class BallDevice(SystemWideDevice):
             self._source_device_balls_available()
 
         # tell targets that we have balls available
+        # TODO Event refactor -- what is the purpose of this being a boolean handler?
         for _ in range(new_balls):
             self.machine.events.post_boolean('balldevice_balls_available')
 
-        self.machine.events.post('balldevice_{}_ball_entered'.format(self.name), new_balls=new_balls, device=self)
+        # TODO Alias event refactor
+        event_name = 'balldevice_{}_ball_entered'.format(self.name)
+        self.machine.events.post(event_name, new_balls=new_balls, device=self, name=self.name)
         '''event: balldevice_(name)_ball_entered
 
-        desc: A ball (or balls) have just entered the ball device called
-        "name".
-
+        desc: A ball (or balls) have just entered the ball device called "name".
         The ball was also added to balls and available_balls of the device.
 
         args:
 
+        name: The device name.
         new_balls: The number of new balls that have not been claimed (by locks or similar).
-        device: A reference to the ball device object that is posting this
-        event.
+        device: A reference to the ball device object that is posting this event.
         '''
 
     async def _balls_missing(self, balls):
@@ -466,11 +466,14 @@ class BallDevice(SystemWideDevice):
         self.info_log("%s ball(s) missing from device. Mechanical eject?"
                       " %s", abs(balls), self.config['mechanical_eject'])
 
-        await self.machine.events.post_async('balldevice_{}_ball_missing'.format(self.name), balls=abs(balls))
+        # TODO Alias event refactor
+        event_name = 'balldevice_{}_ball_missing'.format(self.name)
+        await self.machine.events.post_async(event_name, balls=abs(balls), name=self.name)
         '''event: balldevice_(name)_ball_missing
         desc: The device (name) is missing a ball. Note this event is
         posted in addition to the generic *balldevice_ball_missing* event.
         args:
+            name: The device name.
             balls: The number of balls that are missing
         '''
         await self.machine.events.post_async('balldevice_ball_missing', balls=abs(balls), name=self.name)
@@ -590,6 +593,7 @@ class BallDevice(SystemWideDevice):
 
         target.available_balls += 1
 
+        # TODO another boolean why
         self.machine.events.post_boolean('balldevice_balls_available')
         '''event: balldevice_balls_available
         desc: A device has balls available to be ejected.

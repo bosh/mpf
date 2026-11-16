@@ -73,6 +73,7 @@ class SequenceShot(SystemWideDevice, ModeDevice):
     def _register_handlers(self):
         # use "set" to dedupe events. They must be registered once
         for event in set(self._sequence_events):
+            # TODO Alias event refactor
             self.machine.events.add_handler(event, self._sequence_advance, event_name=event)
 
         for switch in self.config['cancel_switches']:
@@ -91,12 +92,10 @@ class SequenceShot(SystemWideDevice, ModeDevice):
         self.machine.events.remove_handler(self._delay_switch_hit)
 
         for switch in self.config['cancel_switches']:
-            self.machine.switch_controller.remove_switch_handler(
-                switch.name, self.event_cancel, 1)
+            self.machine.switch_controller.remove_switch_handler(switch.name, self.event_cancel, 1)
 
         for switch in list(self.config['delay_switch_list'].keys()):
-            self.machine.switch_controller.remove_switch_handler(
-                switch.name, self._delay_switch_hit, 1)
+            self.machine.switch_controller.remove_switch_handler(switch.name, self._delay_switch_hit, 1)
 
     def _sequence_advance(self, event_name, **kwargs):
         # Since we can track multiple simultaneous sequences (e.g. two balls
@@ -189,9 +188,12 @@ class SequenceShot(SystemWideDevice, ModeDevice):
             elapsed = 0
 
         """Post sequence complete event including its elapsed time to complete."""
-        self.machine.events.post("{}_hit".format(self.name), elapsed=elapsed)
+        # TODO Alias event refactor
+        self.machine.events.post("{}_hit".format(self.name), name=self.name, elapsed=elapsed)
         '''event: (name)_hit
         desc: The sequence_shot called (name) was just completed.
+        args:
+        name: The device name.
         '''
 
     @event_handler(0)
@@ -230,7 +232,13 @@ class SequenceShot(SystemWideDevice, ModeDevice):
         """Sequence timeouted."""
         self.debug_log("Sequence %s timeouted", seq_id)
 
-        self.active_sequences = [x for x in self.active_sequences
-                                 if x[0] != seq_id]
+        self.active_sequences = [x for x in self.active_sequences if x[0] != seq_id]
 
-        self.machine.events.post("{}_timeout".format(self.name))
+        # TODO Alias event refactor
+        self.machine.events.post("{}_timeout".format(self.name), name=self.name)
+        '''event: (name)_timeout
+        desc: The sequence shot timed out without completing.
+
+        args:
+        name: The device name.
+        '''

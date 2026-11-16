@@ -122,6 +122,8 @@ class Bonus(Mode):
         self.machine.events.post("bonus_entry", entry=entry['entry'],
                                  score=score, text=entry['text'],
                                  bonus_score=self.bonus_score, hits=hits)
+        # TODO Alias event refactor
+        # TODO events_when refactor
         if entry.get("event"):
             self.machine.events.post(entry['event'], score=score,
                                      bonus_score=self.bonus_score, hits=hits)
