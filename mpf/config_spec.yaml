@@ -25,9 +25,9 @@ achievement_groups:
     enable_while_no_achievement_started: single|bool|true
     rotate_right_events: event_handler|event_handler:ms|None
     rotate_left_events: event_handler|event_handler:ms|None
-    events_when_all_completed: list|event_posted|None
-    events_when_no_more_enabled: list|event_posted|None
-    events_when_enabled: list|event_posted|None
+    events_when_all_completed: list|event_posted|None # TODO deprecate
+    events_when_no_more_enabled: list|event_posted|None # TODO deprecate
+    events_when_enabled: list|event_posted|None # TODO deprecate
     show_tokens: dict|str:str|None
     sync_ms: single|int|None
     show_when_enabled: single|machine(shows)|None
@@ -49,7 +49,7 @@ achievements:
     select_events: event_handler|event_handler:ms|None
     unselect_events: event_handler|event_handler:ms|None
 
-    events_when_enabled: list|event_posted|None
+    events_when_enabled: list|event_posted|None # TODO deprecate all of this wow
     events_when_started: list|event_posted|None
     events_when_completed: list|event_posted|None
     events_when_stopped: list|event_posted|None
@@ -170,7 +170,7 @@ ball_device_counter_entrance_switches:
     ball_capacity: single|int|None
 ball_device_ejector_event:
     class: ignore
-    events_when_eject_try: list|event_posted|None
+    events_when_eject_try: list|event_posted|None # TODO replace with defaults on all three?
     events_when_reorder_balls: list|event_posted|None
     events_when_ball_search: list|event_posted|None
 ball_device_ejector_pulse:
@@ -281,7 +281,7 @@ bonus_entries:
     player_score_entry: single|str|None
     skip_if_zero: single|bool|true
     skip_if_negative: single|bool|false
-bus_player:
+bus_player: # TODO remove? deprecated mc stuff?
     __valid_in__: machine, mode, show
     __type__: config_player
     action: single|enum(pause,stop,unpause)|
@@ -349,9 +349,9 @@ dual_wound_coils:
     main_coil: single|machine(coils)|
     hold_coil: single|machine(coils)|
     eos_switch: single|machine(switches)|None
-opp_coils:
+opp_coils: # TODO platform settings
     recycle_factor: single|int|None
-pkone_coils:
+pkone_coils: # TODO platform settings
     recycle_ms: single|ms|None
 coil_player:
     __valid_in__: machine, mode, show
@@ -376,7 +376,7 @@ combo_switches:
     max_offset_time: single|secs|-1
     hold_time: single|ms|0
     release_time: single|ms|0
-    events_when_both: list|event_posted|None
+    events_when_both: list|event_posted|None # TODO deprecate
     events_when_inactive: list|event_posted|None
     events_when_one: list|event_posted|None
     events_when_switches_1: list|event_posted|None
@@ -422,7 +422,7 @@ device:     # base for all devices
     debug: single|bool|false
     console_log: single|enum(none,basic,full)|basic
     file_log: single|enum(none,basic,full)|basic
-displays:
+displays: # TODO deprecated?
     __valid_in__: machine
     __type__: device
     width: single|int|800
@@ -513,7 +513,7 @@ queue_event_player:
     __type__: config_player
     args: dict|str:str|None
     queue_event: single|event_handler|
-    events_when_finished: single|event_posted|None
+    events_when_finished: single|event_posted|None # TODO deprecate?
 queue_relay_player:
     __valid_in__: machine, mode
     __type__: config_player
@@ -540,7 +540,7 @@ extra_ball_groups:
     max_per_ball: single|int|None
     max_lit: single|int|None
     lit_memory: single|bool|true
-fadecandy:
+fadecandy: # TODO platform settings
     __valid_in__: machine
     __type__: config
     gamma: single|float|2.5
@@ -551,7 +551,7 @@ fadecandy:
     dithering: single|bool|true
     console_log: single|enum(none,basic,full)|none
     file_log: single|enum(none,basic,full)|basic
-fast:
+fast: # TODO platform settings x a lot
     __valid_in__: machine
     __type__: config
     net: single|subconfig(fast_net)|None
@@ -765,7 +765,7 @@ hardware_sound_player:
     value: single|str|None
     platform_options: single|dict|None
     sound_system: single|machine(hardware_sound_systems)|default
-hardware_benchmark:
+hardware_benchmark: # TODO ???
     __valid_in__: machine
     __type__: config
     switch1: single|machine(switches)|None
@@ -879,7 +879,7 @@ light_player:
     color: single|str|white
     fade: single|ms_or_token|None
     priority: single|int_or_token|0
-lisy:
+lisy: # TODO Platform config
     __valid_in__: machine
     __type__: config
     baud: single|int|None
@@ -905,8 +905,8 @@ logic_blocks_common:
     disable_on_complete: single|bool|true
     persist_state: single|bool|false
     start_enabled: single|bool|None
-    events_when_complete: list|event_posted|None
-    events_when_hit: list|event_posted|None
+    events_when_complete: list|event_posted|None # TODO deprecate
+    events_when_hit: list|event_posted|None # TODO deprecate
     logic_block_timeout: single|ms|0
 accruals:
     __valid_in__: machine, mode
@@ -951,7 +951,7 @@ machine_vars:
     initial_value: single|str|
     value_type: single|enum(str,float,int)|int
     persist: single|bool|true
-mma8451_accelerometer:
+mma8451_accelerometer: # TODO platform config
     i2c_platform: single|str|None
 mode:
     __valid_in__: mode
@@ -1072,7 +1072,7 @@ multiball_locks:
     reset_all_counts_events: event_handler|event_handler:ms|None
     reset_count_for_current_player_events: event_handler|event_handler:ms|None
     empty_lock_devices_on_ball_end: single|bool|false
-mypinballs:
+mypinballs: # TODO platform config
     __valid_in__: machine
     __type__: config
     port: single|str|
@@ -1081,7 +1081,7 @@ mypinballs:
 named_colors:
     __valid_in__: machine
     __type__: list
-osc:
+osc: # TODO platform config
     __valid_in__: machine
     __type__: config
     remote_ip: single|str|127.0.0.1
@@ -1089,7 +1089,7 @@ osc:
     listen_ip: single|str|127.0.0.1
     listen_port: single|int|9000
     events_to_send: list|event_handler|None
-opp:
+opp: # TODO platform config
     __valid_in__: machine
     __type__: config
     driverboards: single|enum(gen2)|gen2
@@ -1101,7 +1101,7 @@ opp:
     file_log: single|enum(none,basic,full)|basic
     poll_hz: single|int|100
     incand_update_hz: single|int|25
-open_pixel_control:
+open_pixel_control: # TODO platform config
     __valid_in__: machine
     __type__: config
     host: single|str|localhost
@@ -1109,7 +1109,7 @@ open_pixel_control:
     debug: single|bool|false
     console_log: single|enum(none,basic,full)|none
     file_log: single|enum(none,basic,full)|basic
-p_roc:
+p_roc: # TODO platform config
     __valid_in__: machine
     __type__: config
     driverboards: single|enum(wpc,wpcAlphanumeric,wpc95,sternSAM,sternWhitestar,pdb,custom,None)|None
@@ -1126,9 +1126,9 @@ p_roc:
     pd_led_boards: dict|int:subconfig(pd_led_boards)|none
     use_separate_thread: single|bool|true
     trace_bus: single|bool|false
-p_roc_coils:
+p_roc_coils: # TODO platform config
     polarity: single|bool|None
-p3_roc:
+p3_roc: # TODO platform config
     driverboards: single|enum(pdb,custom,None)|None
     lamp_matrix_strobe_time: single|ms|100ms
     watchdog_time: single|ms|1s
@@ -1146,7 +1146,7 @@ p3_roc:
     trace_bus: single|bool|false
     gpio_poll_frequency: single|int|50
     gpio_map: dict|int:enum(input,output)|None
-pin2dmd:
+pin2dmd: # TODO platform config
     __valid_in__: machine
     __type__: config
     debug: single|bool|false
@@ -1154,7 +1154,7 @@ pin2dmd:
     file_log: single|enum(none,basic,full)|basic
     resolution: single|enum(128x32,192x64,256x64)|128x32
     panel: single|enum(rgb,rbg)|rgb
-pkone:
+pkone: # TODO platform config
     lightshow_groups: dict|str:str|None
     __valid_in__: machine
     __type__: config
@@ -1164,7 +1164,7 @@ pkone:
     debug: single|bool|false
     console_log: single|enum(none,basic,full)|none
     file_log: single|enum(none,basic,full)|basic
-pd_led_boards:
+pd_led_boards: # TODO platform config
     use_ws281x_0: single|bool|false
     use_ws281x_1: single|bool|false
     use_ws281x_2: single|bool|false
@@ -1235,13 +1235,13 @@ playfield_transfers:
     __valid_in__: machine
     __type__: device
     ball_switch: single|machine(switches)|None
-    transfer_events: event_handler|event_handler:ms|None
+    transfer_events: event_handler|event_handler:ms|None # TODO is the a signal in or out?
     eject_target: single|machine(ball_devices)|
     captures_from: single|machine(ball_devices)|
-plugins:
+plugins: # TODO remove
     __valid_in__: machine                      # todo add to validator
     __type__: list
-pololu_maestro:
+pololu_maestro: # TODO platform config
     __valid_in__: machine
     __type__: config
     port: single|str|
@@ -1250,7 +1250,7 @@ pololu_maestro:
     console_log: single|enum(none,basic,full)|none
     file_log: single|enum(none,basic,full)|basic
     debug: single|bool|false
-pololu_tic:
+pololu_tic: # TODO platform config
     __valid_in__: machine
     __type__: config
     debug: single|bool|false
@@ -1265,7 +1265,7 @@ random_event_player:
     force_all: single|bool|true
     disable_random: single|bool|false
     scope: single|enum(player,machine)|player
-raspberry_pi:
+raspberry_pi: # TODO platform config
     __valid_in__: machine
     __type__: config
     ip: single|str|
@@ -1515,7 +1515,7 @@ state_machine_transitions:
 state_machine_states:
     label: single|str|None
     show_when_active: single|subconfig(show_config)|None
-    events_when_started: list|event_posted|None
+    events_when_started: list|event_posted|None # TODO consider deprecation
     events_when_restored: list|event_posted|None
     events_when_stopped: list|event_posted|None
 show_config:
@@ -1580,13 +1580,13 @@ slide_player:
     max_queue_time: single|secs|None
     animation: ignore
     method: ignore
-snux:
+snux: # TODO platform section
     __valid_in__: machine
     __type__: config
     diag_led_driver: single|machine(coils)|
     console_log: single|enum(none,basic,full)|none
     file_log: single|enum(none,basic,full)|basic
-smartmatrix:
+smartmatrix: # TODO platform section
     __valid_in__: machine
     __type__: config_dict
     port: single|str|
@@ -1594,7 +1594,7 @@ smartmatrix:
     old_cookie: single|bool|false
     console_log: single|enum(none,basic,full)|none
     file_log: single|enum(none,basic,full)|basic
-smart_virtual:
+smart_virtual: # TODO platform section
     __valid_in__: machine
     __type__: config
     simulate_manual_plunger: single|bool|false
@@ -1618,15 +1618,11 @@ sound_player:
     fade_out: single|secs|None
     about_to_finish_time: single|secs|-1
     max_queue_time: single|secs|-1
-    events_when_played: list|event_posted|None
+    events_when_played: list|event_posted|None # TODO consider removal -- probably not because the same sound instance might have different events to report
     events_when_stopped: list|event_posted|None
     events_when_looping: list|event_posted|None
     events_when_about_to_finish: list|event_posted|None
     key: single|str|None
-sound_pools:
-    __valid_in__: machine, mode                      # todo add to validator
-    __type__: config_dict
-    __allow_others__:
 sound_ducking:
     bus: single|str|
     attack: single|secs|
@@ -1639,7 +1635,7 @@ speedometers:
     __type__: device
     start_switch: single|machine(switches)|None
     stop_switch: single|machine(switches)|None
-spi_bit_bang:
+spi_bit_bang: # TODO platform section
     __valid_in__: machine
     __type__: config
     debug: single|bool|false
@@ -1649,7 +1645,7 @@ spi_bit_bang:
     bit_time: single|secs|50ms
     clock_time: single|ms|1ms
     inputs: single|int|8
-spike:
+spike: # TODO platform section
     __valid_in__: machine
     __type__: config
     debug: single|bool|false
@@ -1675,10 +1671,10 @@ spike:
     default_debounce_open: single|ms|4
     default_debounce_close: single|ms|4
     node_config: dict|int:subconfig(spike_node)|None
-spike_switch_overwrites:
+spike_switch_overwrites: # TODO platform section
     debounce_open: single|ms|None
     debounce_close: single|ms|None
-spike_node:
+spike_node: # TODO platform section
     coil_priorities: list|int|None
     num_leds: single|int|None
     num_inputs: single|int|None
@@ -1732,12 +1728,12 @@ shaker_pulse_settings:
     action: single|enum(pulse,stop)|pulse
     power: single|float|None
     duration: single|template_secs|None
-spike_stepper_settings:
+spike_stepper_settings: # TODO platform section
     homing_speed: single|int|10
     speed: single|int|20
     poll_ms: single|ms|100ms
     light_number: single|str|
-steprocker_stepper_settings:
+steprocker_stepper_settings: # TODO platform section
     homing_speed: single|float|1.0
     fullstep_per_userunit: single|float|1.0
     move_current: single|int|20
@@ -1746,20 +1742,20 @@ steprocker_stepper_settings:
     microstep_per_fullstep: single|int|16
     velocity_limit: single|float|1.0
     acceleration_limit: single|float|1.0
-step_stick_stepper_settings:
+step_stick_stepper_settings: # TODO platform section
     low_time: single|secs|20ms
     high_time: single|secs|20ms
-switch_player:
+switch_player: # TODO remove into extension
     __valid_in__: machine
     __type__: config_player
     start_event: single|event_handler|machine_reset_phase_3
     steps: ignore
-sequence_shots:
+sequence_shots: # TODO rename - uhhh action_sequence ?
     __valid_in__: machine, mode
     __type__: device
     switch_sequence: list|machine(switches)|None
     event_sequence: list|event_handler|None
-    cancel_switches: list|machine(switches)|None
+    cancel_switches: list|machine(switches)|None # TODO make these four properties name more consistently
     cancel_events: event_handler|event_handler:ms|None
     delay_switch_list: dict|machine(switches):ms|None
     delay_event_list: event_handler|event_handler:ms|None
@@ -1774,15 +1770,15 @@ switches:
     debounce: single|enum(auto,quick,normal)|auto
     ignore_window_ms: single|ms|0
     ignore_during_ball_search: single|bool|false
-    events_when_activated: list|event_posted|None
-    events_when_deactivated: list|event_posted|None
+    events_when_activated: list|event_posted|None # TODO deprecate
+    events_when_deactivated: list|event_posted|None # TODO deprecate
     platform: single|str|None
     platform_settings: single|dict|None
     playfield: single|machine(playfields)|playfield
     x: single|float|None
     y: single|float|None
     z: single|float|None
-system11:
+system11: # TODO platform section
     __valid_in__: machine
     __type__: config
     ac_relay_delay_ms: single|ms|75ms
@@ -1796,15 +1792,12 @@ system11:
     debug: single|bool|false
     console_log: single|enum(none,basic,full)|none
     file_log: single|enum(none,basic,full)|basic
-text_strings:
-    __valid_in__: machine, mode                 # todo add to validator
-    __type__: config_dict
 text_ui:
     __valid_in__: machine
     __type__: config
     player_vars: list|str|None
     machine_vars: list|str|None
-tic_stepper_settings:
+tic_stepper_settings: # TODO platform section
     max_speed: single|int|2000000
     starting_speed: single|int|0
     max_acceleration: single|int|40000
@@ -1833,8 +1826,8 @@ timed_switches:
     switch_tags: list|str|None
     time: single|ms|
     state: single|enum(active,inactive)|active
-    events_when_active: list|event_posted|None
-    events_when_released: list|event_posted|None
+    events_when_active: list|event_posted|None #TODO deprecate
+    events_when_released: list|event_posted|None #TODO deprecate
 timers:
     __valid_in__: mode
     __type__: device
@@ -1851,7 +1844,7 @@ timer_control_events:  # subconfig for mode timers
     action: single|enum(add,subtract,jump,start,stop,reset,restart,pause,set_tick_interval,change_tick_interval,reset_tick_interval)|
     event: single|event_handler|
     value: single|template_float|None  # float for change_tick_interval, int for the rest
-trinamics_steprocker:
+trinamics_steprocker: # TODO platform section
     __valid_in__: machine
     __type__: config
     port: single|str|
@@ -1864,19 +1857,6 @@ variable_player:
     block: single|bool|false
     action: single|enum(add,set,add_machine,set_machine)|add
     player: single|int|None
-video_pools:
-    __valid_in__: machine, mode                      # todo add to validator
-    __type__: config_dict
-videos:         # not really used
-    __valid_in__: machine, mode
-    __type__: config_dict
-    load: single|str|preload
-    file: single|str|None
-    priority: single|int|0
-    width: single|num|None
-    height: single|num|None
-    events_when_played: list|event_posted|None
-    events_when_stopped: list|event_posted|None
 virtual_platform_start_active_switches:
     __valid_in__: machine                           # todo add to validator
     __type__: list
@@ -1886,7 +1866,7 @@ virtual_segment_display_connector:
     debug: single|bool|false
     bcp_connection: single|str|local_display
     segment_displays: list|machine(segment_displays)|None
-vpe:
+vpe: # TODO platform section
     __valid_in__: machine
     __type__: config
     debug: single|bool|false
@@ -1897,7 +1877,7 @@ widget_player:
     priority: single|int_or_token|None
     slide: single|str|None
     action: single|enum(play,remove,update,preload,animation,method)|play
-    animation: ignore
+    animation: ignore #TODO in gmc it seems to also have sub options: custom_blend, custom_speed, from_end, from_start
     method: ignore
     key: single|str|None
     target: single|str|None
@@ -1905,28 +1885,8 @@ widget_player:
     tokens: dict|str:str|None
     x: single|int|0
     y: single|int|0
-window:
-    __valid_in__: machine
-    __type__: config
-    icon: single|str|None
-    title: single|str|Mission Pinball Framework
-    source_display: single|str|window
-    borderless: single|bool_int|false
-    resizable: single|bool_int|true
-    fullscreen: single|str|false
-    show_cursor: single|bool_int|true
-    exit_on_escape: single|bool|true
-    height: single|int|600
-    maxfps: single|int|60
-    width: single|int|800
-    minimum_width: single|int|0
-    minimum_height: single|int|0
-    left: single|int|None
-    top: single|int|None
-    no_window: single|bool|false
-    effects: ignore
 
-zedmd:
+zedmd: # TODO platform section
     __valid_in__: machine
     __type__: config_dict
     console_log: single|enum(none,basic,full)|none

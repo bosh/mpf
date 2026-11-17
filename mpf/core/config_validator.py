@@ -354,7 +354,7 @@ class ConfigValidator:
     def _validate_type_subconfig(self, item, param, validation_failure_info):
         # The inclusion of sound_pools causes a nested ducking subconfig that
         # fails due to missing required properties. Check for an empty dict
-        # as subconfig and ignore it.
+        # as subconfig and ignore it.  TODO can this thus be simplifed now?
         if item is None or (item is Dict and len(item) == 0):
             return {}
         try:
