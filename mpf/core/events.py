@@ -642,14 +642,17 @@ class EventManager(MpfController):
 
     def _post(self, event: str, ev_type: Optional[str], callback, **kwargs: dict) -> None:
         if self._stopped:
-            self.warning_log("Event after stop: ===='%s'==== Type: %s, Callback: %s, "
+            self.warning_log("Event after stop: '%s' Type: %s, Callback: %s, "
                              "Args: %s", event, ev_type, callback, kwargs)
             return
         if self._debug:
-            self.debug_log("Event: ===='%s'==== Type: %s, Callback: %s, "
+            self.debug_log("Event: '%s' Type: %s, Callback: %s, "
                            "Args: %s", event, ev_type, callback, kwargs)
         elif self._info and not kwargs.get("_silent", False):
-            self.info_log("Event: ======'%s'====== Args=%s", event, kwargs)
+            if kwargs:
+                self.info_log("Event: '%s' Args=%s", event, kwargs)
+            else:
+                self.info_log("Event: '%s'", event)
 
         # fast path for events without handler
         if not callback and not self.monitor_events and event not in self.registered_handlers:
@@ -670,6 +673,7 @@ class EventManager(MpfController):
                 self.debug_log("| %s, %s, %s, %s", this_event[0], this_event[1],
                                this_event[2], this_event[3])
             self.debug_log("+========================================")
+
 
     async def _run_handlers_sequential(self, event: str, callback, kwargs: dict) -> None:
         """Run all handlers for an event."""

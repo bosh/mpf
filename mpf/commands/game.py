@@ -9,6 +9,9 @@ import sys
 import datetime
 import logging
 from logging.handlers import QueueHandler, SysLogHandler
+import time
+import re
+import zlib
 
 from queue import Queue
 
@@ -130,6 +133,11 @@ class Command:
                             const='smart_virtual',
                             help="Forces the smart virtual platform to be used for all devices")
 
+        parser.add_argument("--color",
+                            action=argparse.BooleanOptionalAction, dest="color",
+                            default=None,
+                            help="Force or disable ANSI colorized console output.")
+
         self.args = parser.parse_args(args)
         self.args.configfile = Util.string_to_event_list(self.args.configfile)
 
@@ -156,8 +164,21 @@ class Command:
             else:
                 console_log.setLevel(self.args.consoleloglevel)
 
-        console_log.setFormatter(logging.Formatter(
-            '%(asctime)s.%(msecs)03d : %(levelname)s [%(name)s] %(message)s', "%H:%M:%S"))
+        use_color = (
+            not os.environ.get("NO_COLOR")
+            and (
+                bool(os.environ.get("FORCE_COLOR"))
+                or (sys.stderr.isatty() and os.environ.get("TERM") != "dumb")
+            )
+        )
+        if use_color:
+            if sys.platform == "win32":
+                os.system("")  # Enable ANSI VT100 escape processing in Windows consoles
+            console_log.setFormatter(ColorFormatter(
+                '%(asctime)s : %(levelname)s [%(name)s] %(message)s'))
+        else:
+            console_log.setFormatter(logging.Formatter(
+                '%(asctime)s.%(msecs)03d : %(levelname)s [%(name)s] %(message)s', "%H:%M:%S"))
 
         console_log.addFilter(ConsoleCustomLevelFilter())
 
@@ -294,3 +315,105 @@ class FileCustomLevelFilter(logging.Filter):
         if record.levelno in (12, 22):
             return False
         return True
+
+
+class ColorFormatter(logging.Formatter):
+
+    """ANSI TrueColor formatter with gradient timestamps, family names, and alert levels."""
+
+    RESET = "\033[0m"
+    DIM = "\033[90m"
+    EVENT_PREFIX_RE = re.compile(r"(?<=\]\s)Event:(?=\s)")
+    ARGS_WRAPPER_RE = re.compile(r"(?<=\s)Args=\{([^\n]*)\}$")
+
+    LEVEL_COLORS = {
+        logging.DEBUG: "\033[36m",      # Cyan (covers 10 and 12)
+        logging.WARNING: "\033[33m",    # Yellow (30)
+        logging.ERROR: "\033[31m",      # Red (40)
+        logging.CRITICAL: "\033[1;31m"  # Bold Red (50)
+    }
+
+    # Smooth 0-100 gradient stops (Cyan -> Violet -> Coral -> Gold -> Mint)
+    GRADIENT_STOPS = (
+        (0,   (80, 220, 255)),
+        (25,  (170, 130, 255)),
+        (50,  (255, 110, 160)),
+        (75,  (255, 200, 90)),
+        (100, (90, 240, 170)),
+    )
+
+    @classmethod
+    def _sample_gradient(cls, step: int) -> str:
+        """Sample a 0-100 step along GRADIENT_STOPS and return a 24-bit ANSI escape."""
+        step = max(0, min(100, step))
+        for i in range(len(cls.GRADIENT_STOPS) - 1):
+            s0, c0 = cls.GRADIENT_STOPS[i]
+            s1, c1 = cls.GRADIENT_STOPS[i + 1]
+            if s0 <= step <= s1:
+                t = (step - s0) / (s1 - s0)
+                r = round(c0[0] + (c1[0] - c0[0]) * t)
+                g = round(c0[1] + (c1[1] - c0[1]) * t)
+                b = round(c0[2] + (c1[2] - c0[2]) * t)
+                return f"\033[38;2;{r};{g};{b}m"
+        r, g, b = cls.GRADIENT_STOPS[-1][1]
+        return f"\033[38;2;{r};{g};{b}m"
+
+    def formatTime(self, record, datefmt=None):
+        """Format HH:MM:SS.mmm with 2-segment ping-pong (0->500->0) millisecond gradient."""
+        ct = self.converter(record.created)
+        hours = time.strftime("%H", ct)
+
+        min_step = round((ct.tm_min / 59) * 100)
+        sec_step = round((ct.tm_sec / 59) * 100)
+        ms_val = int(record.msecs)
+
+        if ms_val < 500:
+            pos = ms_val / 499
+        else:
+            pos = (999 - ms_val) / 499
+        ms_step = round(pos * 100)
+
+        c_min = self._sample_gradient(min_step)
+        c_sec = self._sample_gradient(sec_step)
+        c_ms = self._sample_gradient(ms_step)
+        blink_ms = "\033[5m" if ms_val % 111 == 0 else ""
+
+        return (
+            f"{hours}:"
+            f"{c_min}{ct.tm_min:02d}{self.RESET}:"
+            f"{c_sec}{ct.tm_sec:02d}{self.RESET}."
+            f"{blink_ms}{c_ms}{ms_val:03d}{self.RESET}"
+        )
+
+    def format(self, record):
+        """Colorize timestamps, family names, non-INFO levels, and mute boilerplate wrappers."""
+        base_level = (record.levelno // 10) * 10
+        color = self.LEVEL_COLORS.get(base_level)
+
+        orig_levelname = record.levelname
+        orig_name = record.name
+
+        if color:
+            record.levelname = f"{color}{orig_levelname}{self.RESET}"
+
+        family, dot, device = orig_name.partition(".")
+        family_bucket = zlib.crc32(family.encode("utf-8")) % 32
+        family_step = round((family_bucket / 31) * 100)
+        family_color = self._sample_gradient(family_step)
+        if dot:
+            record.name = f"{family_color}{family}{self.RESET}.{device}"
+        else:
+            record.name = f"{family_color}{family}{self.RESET}"
+
+        try:
+            formatted = super().format(record)
+        finally:
+            record.levelname = orig_levelname
+            record.name = orig_name
+
+        formatted = self.EVENT_PREFIX_RE.sub(f"{self.DIM}Event:{self.RESET}", formatted)
+        formatted = self.ARGS_WRAPPER_RE.sub(
+            rf"{self.DIM}Args={{{self.RESET}\1{self.DIM}}}{self.RESET}",
+            formatted,
+        )
+        return formatted
